@@ -2,10 +2,7 @@
 
 Experiments with fuzz testing java applications using coverage to guide the process. 
 
-Uses Jacoco to get coverage stats. Spring to find classes in the class path that implement `FuzzTest`
+Uses Jacoco to get coverage stats. Spring to find classes in the class path that implement `FuzzTest` or a command line 
+parameter to specify a class to run.
 
-## TODO:
-* Call repeatedly
-* Reset coverage stats
-* Hash/bitmap coverage comparison.
 
