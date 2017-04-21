@@ -88,6 +88,7 @@ object App extends Arguments {
       pool.awaitTermination(5, TimeUnit.SECONDS)
       println(stats.getStats())
     }
+
   }
 
   private def fuzzLoop(targetName : String,
@@ -132,8 +133,8 @@ object App extends Arguments {
     // Here we execute our test target class through its interface
     val targetInstance = targetClass.newInstance.asInstanceOf[FuzzTest]
     try {
-      result = targetInstance.test(input)
-      (true, memoryClassLoader.generateCoverageHash(), None)
+      val result = targetInstance.test(input)
+      (result, memoryClassLoader.generateCoverageHash(), None)
     } catch {
       case e : Throwable =>
         (false, memoryClassLoader.generateCoverageHash(), Some(e))
