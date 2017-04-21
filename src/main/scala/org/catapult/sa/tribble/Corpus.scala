@@ -19,9 +19,9 @@ object Corpus {
   val CORPUS = "corpus"
   val FAILED = "failed"
 
-  def validateDirectories(arguments : Map[String, String]) : Boolean = {
+  def validateDirectories(arguments: Map[String, String]): Boolean = {
     val corpusFile = new File(arguments(Corpus.CORPUS))
-    if (corpusFile.exists() && (! corpusFile.isDirectory || !corpusFile.canWrite)) {
+    if (corpusFile.exists() && (!corpusFile.isDirectory || !corpusFile.canWrite)) {
       println("ERROR: corpus path exists but is not a directory: " + corpusFile.getAbsolutePath)
       return false
     }
@@ -32,12 +32,12 @@ object Corpus {
     }
 
     val failedFile = new File(arguments(Corpus.FAILED))
-    if (failedFile.exists() && (! failedFile.isDirectory || !failedFile.canWrite)) {
+    if (failedFile.exists() && (!failedFile.isDirectory || !failedFile.canWrite)) {
       println("ERROR: failed path exists but is not a directory: " + failedFile.getAbsolutePath)
       return false
     }
 
-    if (! failedFile.exists()) {
+    if (!failedFile.exists()) {
       println("Failed directory does not exist. Creating.")
       Files.createDirectory(Paths.get(arguments(Corpus.FAILED)))
     }
@@ -45,18 +45,24 @@ object Corpus {
     true
   }
 
-  def readCorpusInputStack(arguments: Map[String, String], stack : mutable.ArrayStack[Array[Byte]]) : Unit = {
-    Files.newDirectoryStream(Paths.get(arguments(CORPUS))).forEach { f =>
-      if (f.getFileName.endsWith(".hex")) {
-        val hexString = IOUtils.toString(new FileInputStream(f.toFile), StandardCharsets.UTF_8)
-        stack.push(DatatypeConverter.parseHexBinary(hexString))
-      } else {
-        stack.push(IOUtils.toByteArray(new FileInputStream(f.toFile)))
+  val lock = new Object()
+
+  def readCorpusInputStack(arguments: Map[String, String], stack: mutable.ArrayStack[Array[Byte]]): Unit = {
+    lock.synchronized {
+      if (stack.isEmpty) {
+        Files.newDirectoryStream(Paths.get(arguments(CORPUS))).forEach { f =>
+          if (f.getFileName.endsWith(".hex")) {
+            val hexString = IOUtils.toString(new FileInputStream(f.toFile), StandardCharsets.UTF_8)
+            stack.push(DatatypeConverter.parseHexBinary(hexString))
+          } else {
+            stack.push(IOUtils.toByteArray(new FileInputStream(f.toFile)))
+          }
+        }
       }
     }
   }
 
-  def saveResult(input : Array[Byte], success : Boolean, ex : Option[Throwable], arguments : Map[String, String]) : Unit = {
+  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], arguments: Map[String, String]): Unit = {
     val md5 = MessageDigest.getInstance("MD5")
     val filename = DatatypeConverter.printHexBinary(md5.digest(input))
 
@@ -74,13 +80,13 @@ object Corpus {
     }
   }
 
-  def saveArray(input : Array[Byte], fileName : String) : Unit = {
+  def saveArray(input: Array[Byte], fileName: String): Unit = {
     if (containsUnprintableChars(input)) {
-      if (! new File(s"$fileName.hex").exists()) {
+      if (!new File(s"$fileName.hex").exists()) {
         IOUtils.write(DatatypeConverter.printHexBinary(input), new FileOutputStream(s"$fileName.hex"), StandardCharsets.UTF_8)
       }
     } else {
-      if (! new File(fileName).exists()) {
+      if (!new File(fileName).exists()) {
         IOUtils.write(input, new FileOutputStream(fileName))
       }
     }
@@ -89,9 +95,9 @@ object Corpus {
   // TODO: this should handle other unprintable characters. (Really we should deal with multibyte stuff and so on)
   // Though on the other hand we can probably deal with other lower order characters easily
   // We should probably keep non hex files to actually type-able stuff
-  private def containsUnprintableChars(input : Array[Byte]) : Boolean = input.exists(b => b < 0x20 || b > 0x7F)
+  private def containsUnprintableChars(input: Array[Byte]): Boolean = input.exists(b => b < 0x20 || b > 0x7F)
 
-  def mutate(input : Array[Byte], rand : Random) : Array[Byte] = {
+  def mutate(input: Array[Byte], rand: Random): Array[Byte] = {
     // TODO: an empty array is valid
     if (input.isEmpty) {
       Array[Byte](0x00) // if we started with empty input make a single byte we can mutate more next time.
@@ -105,7 +111,7 @@ object Corpus {
     }
   }
 
-  private def mutateInPlace(input : Array[Byte], rand : Random) : Array[Byte] = {
+  private def mutateInPlace(input: Array[Byte], rand: Random): Array[Byte] = {
     rand.nextInt(4) match {
       case 0 => // add one to a random byte
         val index = rand.nextInt(input.length)
@@ -127,7 +133,7 @@ object Corpus {
     }
   }
 
-  private def changeOneByte(input : Array[Byte], rand : Random) : Array[Byte] = {
+  private def changeOneByte(input: Array[Byte], rand: Random): Array[Byte] = {
     val index = rand.nextInt(input.length)
     val value = rand.nextInt(255).asInstanceOf[Byte]
     input.update(index, value)
@@ -135,7 +141,7 @@ object Corpus {
   }
 
 
-  private def extendArray(input : Array[Byte], rand : Random, length : Int = 10) : Array[Byte] = {
+  private def extendArray(input: Array[Byte], rand: Random, length: Int = 10): Array[Byte] = {
     val extra = new Array[Byte](rand.nextInt(length))
     rand.nextBytes(extra)
     val result = new Array[Byte](input.length + extra.length)
@@ -144,7 +150,7 @@ object Corpus {
     result
   }
 
-  private def doubleUpArray(input : Array[Byte], rand : Random) : Array[Byte] = {
+  private def doubleUpArray(input: Array[Byte], rand: Random): Array[Byte] = {
     val result = new Array[Byte](input.length * 2)
     input.copyToArray(result, 0)
     input.copyToArray(result, input.length)

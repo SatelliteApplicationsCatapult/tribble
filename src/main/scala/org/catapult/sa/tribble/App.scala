@@ -1,5 +1,7 @@
 package org.catapult.sa.tribble
 
+import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
+
 import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
@@ -56,25 +58,45 @@ object App extends Arguments {
       }).head
     }
 
-    fuzzLoop(targetName.toString)
+    fuzzWithThreads(targetName.toString)
   }
 
   private var arguments : Map[String, String] = _
 
   lazy val rand = new Random()
 
-  private def fuzzLoop(targetName : String): Unit = {
+  private def fuzzWithThreads(targetName : String) : Unit = {
     val coverageSet = new mutable.HashSet[String]()
     val stats = new Stats()
-
-    val statsThread = new Thread(stats)
-    statsThread.start()
 
     // TODO: Threads / Thread pool
 
     val workStack = new mutable.ArrayStack[Array[Byte]]()
     workStack.push(Array[Byte]())
     Corpus.readCorpusInputStack(arguments, workStack)
+
+    // TODO : Thread count option
+    val pool: ExecutorService = Executors.newFixedThreadPool(2)
+
+    (0 to 2).foreach( _ => {
+      pool.submit(new Runnable() {
+        def run() : Unit = fuzzLoop(targetName, coverageSet, workStack, stats)
+      })
+    })
+
+
+    while (true) {
+      pool.awaitTermination(5, TimeUnit.SECONDS)
+      println(stats.getStats())
+    }
+
+
+  }
+
+  private def fuzzLoop(targetName : String,
+                       coverageSet : mutable.HashSet[String],
+                       workStack : mutable.ArrayStack[Array[Byte]],
+                       stats : Stats): Unit = {
 
     def loop() {
 
@@ -110,19 +132,14 @@ object App extends Arguments {
 
     val targetClass = memoryClassLoader.loadClass(targetName)
 
-    var result = true
-
     // Here we execute our test target class through its interface
     val targetInstance = targetClass.newInstance.asInstanceOf[FuzzTest]
     try {
       result = targetInstance.test(input)
-      (result, memoryClassLoader.generateCoverageHash(), None)
+      (true, memoryClassLoader.generateCoverageHash(), None)
     } catch {
       case e : Throwable =>
-        println("error thrown from test environment")
-        e.printStackTrace()
-        result = false
-        (result, memoryClassLoader.generateCoverageHash(), Some(e))
+        (false, memoryClassLoader.generateCoverageHash(), Some(e))
     }
 
 

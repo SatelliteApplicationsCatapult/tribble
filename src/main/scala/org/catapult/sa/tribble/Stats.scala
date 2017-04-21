@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
   *
   * Later this should be used for displaying a running log as the program is running.
   */
-class Stats extends Runnable{
+class Stats {
 
   private val runs  = new AtomicLong(0)
   private val fails = new AtomicLong(0)
@@ -28,14 +28,8 @@ class Stats extends Runnable{
     CurrentStats(runs.get(), fails.get(), paths.get())
   }
 
-  override def run(): Unit = {
-    while(true) {
-      Thread.sleep(5000)
-      val s = getStats()
-      println(s"runs: ${s.runs} fails: ${s.fails} paths ${s.paths}")
-    }
-  }
-
 }
 
-case class CurrentStats(runs : Long, fails : Long, paths : Int)
+case class CurrentStats(runs : Long, fails : Long, paths : Int) {
+  override def toString: String = s"runs: $runs fails: $fails paths $paths"
+}
