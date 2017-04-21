@@ -69,10 +69,8 @@ object App extends Arguments {
     val coverageSet = new mutable.HashSet[String]()
     val stats = new Stats()
 
-    // TODO: Threads / Thread pool
-
     val workStack = new mutable.ArrayStack[Array[Byte]]()
-    workStack.push(Array[Byte]())
+    workStack.push(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(arguments, workStack)
 
     // TODO : Thread count option
@@ -84,13 +82,12 @@ object App extends Arguments {
       })
     })
 
+    pool.shutdown()
 
-    while (true) {
+    while (!pool.isTerminated) {
       pool.awaitTermination(5, TimeUnit.SECONDS)
       println(stats.getStats())
     }
-
-
   }
 
   private def fuzzLoop(targetName : String,
