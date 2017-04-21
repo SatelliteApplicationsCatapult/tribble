@@ -39,7 +39,7 @@ object App extends Arguments {
       return
     }
 
-    // TODO: Argument for seed? -- Not sure having saved it should be ok.
+    // TODO: Argument for seed? -- Not sure having saved problems it should be ok.
     rand.setSeed(System.currentTimeMillis())
 
     val targetName = if (StringUtils.isNotBlank(arguments.getOrElse(TARGET_CLASS, ""))) {
@@ -65,9 +65,12 @@ object App extends Arguments {
 
   private def fuzzLoop(targetName : String): Unit = {
     val coverageSet = new mutable.HashSet[String]()
+    val stats = new Stats()
 
-    // TODO: Threads
-    // TODO: Stats counting and logging.
+    val statsThread = new Thread(stats)
+    statsThread.start()
+
+    // TODO: Threads / Thread pool
 
     val workStack = new mutable.ArrayStack[Array[Byte]]()
     workStack.push(Array[Byte]())
@@ -90,15 +93,15 @@ object App extends Arguments {
         if (result) {
           workStack.push(newInput)
         }
+        stats.addRun(success = result, newPath = true)
+      } else {
+        stats.addRun(success = result, newPath = false)
       }
 
       loop()
     }
     loop()
   }
-
-
-
 
   private def runOnce(targetName : String, input : Array[Byte]) : (Boolean, String, Option[Throwable]) = {
 
