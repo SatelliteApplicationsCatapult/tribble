@@ -3,7 +3,7 @@ package org.catapult.sa
 import org.catapult.sa.tribble.FuzzTest
 
 /**
-  * Created by Wil.Selwood on 13/04/2017.
+  * Really simple stupid test case
   */
 class TestCase extends FuzzTest {
   def test(data : Array[Byte]): Boolean = {
@@ -13,7 +13,7 @@ class TestCase extends FuzzTest {
       println("bob")
       return true
     }
-    false
+    true
   }
 }
 

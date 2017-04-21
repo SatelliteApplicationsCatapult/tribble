@@ -6,6 +6,9 @@
 # User-specific stuff:
 .idea/
 
+# default fuzz folders
+corpus/
+failed/
 
 ## File-based project format:
 *.iws
