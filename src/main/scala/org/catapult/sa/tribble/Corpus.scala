@@ -86,7 +86,9 @@ object Corpus {
     }
   }
 
-  // TODO: this should handle other unprintable characters. (Really we should deal with 
+  // TODO: this should handle other unprintable characters. (Really we should deal with multibyte stuff and so on)
+  // Though on the other hand we can probably deal with other lower order characters easily
+  // We should probably keep non hex files to actually type-able stuff
   private def containsUnprintableChars(input : Array[Byte]) : Boolean = input.exists(b => b < 0x20 || b > 0x7F)
 
   def mutate(input : Array[Byte], rand : Random) : Array[Byte] = {

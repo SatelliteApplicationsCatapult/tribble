@@ -1,4 +1,4 @@
-package org.catapult.sa
+package org.catapult.sa.testcase
 
 import org.catapult.sa.tribble.FuzzTest
 

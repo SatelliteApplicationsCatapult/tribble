@@ -1,4 +1,4 @@
-package org.catapult.sa
+package org.catapult.sa.testcase
 
 /**
   * Part of test environment. Don't ask
