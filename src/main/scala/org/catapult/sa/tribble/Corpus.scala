@@ -4,11 +4,11 @@ import java.io.{File, FileInputStream, FileOutputStream, PrintStream}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import java.security.MessageDigest
+import java.util.concurrent.BlockingQueue
 import javax.xml.bind.DatatypeConverter
 
 import org.apache.commons.io.IOUtils
 
-import scala.collection.mutable
 import scala.util.Random
 
 /**
@@ -45,18 +45,20 @@ object Corpus {
     true
   }
 
-  val lock = new Object()
+  private val lock = new Object()
 
-  def readCorpusInputStack(arguments: Map[String, String], stack: mutable.ArrayStack[Array[Byte]]): Unit = {
+  def readCorpusInputStack(arguments: Map[String, String], stack: BlockingQueue[Array[Byte]]): Unit = {
     lock.synchronized {
-      if (stack.isEmpty) {
+      if (stack.isEmpty) { // don't write it twice.
         Files.newDirectoryStream(Paths.get(arguments(CORPUS))).forEach { f =>
+          val stream = new FileInputStream(f.toFile)
           if (f.getFileName.endsWith(".hex")) {
-            val hexString = IOUtils.toString(new FileInputStream(f.toFile), StandardCharsets.UTF_8)
-            stack.push(DatatypeConverter.parseHexBinary(hexString))
+            val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
+            stack.put(DatatypeConverter.parseHexBinary(hexString))
           } else {
-            stack.push(IOUtils.toByteArray(new FileInputStream(f.toFile)))
+            stack.put(IOUtils.toByteArray(stream))
           }
+          IOUtils.closeQuietly(stream)
         }
       }
     }
@@ -76,18 +78,21 @@ object Corpus {
       })
     } else { // new and didn't fail so add it to our corpus
       Corpus.saveArray(input, s"${arguments(CORPUS)}/$filename.input")
-
     }
   }
 
   def saveArray(input: Array[Byte], fileName: String): Unit = {
     if (containsUnprintableChars(input)) {
       if (!new File(s"$fileName.hex").exists()) {
-        IOUtils.write(DatatypeConverter.printHexBinary(input), new FileOutputStream(s"$fileName.hex"), StandardCharsets.UTF_8)
+        val stream = new FileOutputStream(s"$fileName.hex")
+        IOUtils.write(DatatypeConverter.printHexBinary(input), stream, StandardCharsets.UTF_8)
+        IOUtils.closeQuietly(stream)
       }
     } else {
       if (!new File(fileName).exists()) {
-        IOUtils.write(input, new FileOutputStream(fileName))
+        val stream = new FileOutputStream(fileName)
+        IOUtils.write(input, stream)
+        IOUtils.closeQuietly(stream)
       }
     }
   }

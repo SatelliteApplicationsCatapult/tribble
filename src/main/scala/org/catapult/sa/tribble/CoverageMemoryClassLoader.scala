@@ -25,19 +25,18 @@ class CoverageMemoryClassLoader() extends ClassLoader {
   private val data = new RuntimeData()
   runtime.startup(data)
 
-  private val definitions = new mutable.HashMap[String, Array[Byte]]()
+  private val definitionClasses = new mutable.HashMap[String, Class[_]]()
   private val instr = new Instrumenter(runtime)
 
-  private val ignores = new mutable.ArrayBuffer[String](2)
-  ignores.append("java.", "org.catapult.sa.tribble.")
+  private val ignores = new mutable.ArrayBuffer[String](4)
+  ignores.append("java.", "javax.", "sun.", "org.catapult.sa.tribble.")
 
   /**
     * Pre load a class into this classloader
     * @param name name of the class.
     */
-  def addClass(name : String) : Unit = {
-    val instrumented = instr.instrument(CoverageMemoryClassLoader.getClassStream(name), name)
-    definitions.put(name, instrumented)
+  def addClass(name : String) : Array[Byte] = {
+    instr.instrument(CoverageMemoryClassLoader.getClassStream(name), name)
   }
 
   /**
@@ -48,34 +47,41 @@ class CoverageMemoryClassLoader() extends ClassLoader {
     ignores.append(prefix)
   }
 
+  def reset() : Unit = {
+    data.reset()
+  }
+
+  def shutdown() : Unit = {
+    runtime.shutdown()
+  }
 
   override def loadClass(name: String, resolve: Boolean): Class[_] = {
-    val bytes = definitions.get(name)
-    if (bytes.isDefined) {
-      val b = bytes.get
-      defineClass(name, b, 0, b.length)
+    val clazz = definitionClasses.get(name)
+    if (clazz.isDefined) {
+      clazz.get
     } else {
       // we cant override the stuff in java. So don't try to instrument
       // Strange things happen if we try and instrument our selves. Don't
       if (!ignores.exists(name.startsWith)) {
-        addClass(name)
-        val instrumented = definitions(name)
-        defineClass(name, instrumented, 0, instrumented.length)
+        val instrumented = addClass(name)
+        val result = defineClass(name, instrumented, 0, instrumented.length)
+        definitionClasses.put(name, result)
+        result
       } else {
         super.loadClass(name, resolve)
       }
     }
   }
 
-  def getDefinedClasses : Iterator[String] = definitions.keysIterator
+  def getDefinedClasses : Iterator[String] = definitionClasses.keysIterator
 
   // calculate an md5 hash of the line coverage generated using this memory classloader.
   def generateCoverageHash() : String = {
 
     val executionData = new ExecutionDataStore
     val sessionInfo = new SessionInfoStore
-    data.collect(executionData, sessionInfo, false)
-    runtime.shutdown()
+    data.collect(executionData, sessionInfo, true)
+
 
     val coverageBuilder = new CoverageBuilder
     val analyzer = new Analyzer(executionData, coverageBuilder)
