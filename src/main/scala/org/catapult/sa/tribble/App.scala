@@ -1,6 +1,6 @@
 package org.catapult.sa.tribble
 
-import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
+import java.util.concurrent._
 
 import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.config.BeanDefinition
@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.`type`.filter.AssignableTypeFilter
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.util.Random
 /**
  * Hello world! with calculated coverage
@@ -66,72 +65,93 @@ object App extends Arguments {
   lazy val rand = new Random()
 
   private def fuzzWithThreads(targetName : String) : Unit = {
-    val coverageSet = new mutable.HashSet[String]()
+    val coverageSet = new ConcurrentHashMap[String, Object]()
+
     val stats = new Stats()
 
-    val workStack = new mutable.ArrayStack[Array[Byte]]()
-    workStack.push(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
+    val workStack = new LinkedBlockingQueue[Array[Byte]]()
+    workStack.put(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(arguments, workStack)
 
     // TODO : Thread count option
-    val pool: ExecutorService = Executors.newFixedThreadPool(2)
+    val pool: ExecutorService = Executors.newFixedThreadPool(1)
 
-    (0 to 2).foreach( _ => {
+    Thread.setDefaultUncaughtExceptionHandler((t, e) => {
+      System.err.println("Exception thrown in thread " + t.getName)
+      e.printStackTrace(System.err)
+    })
+
+    val futures = (0 to 2).map( _ => {
       pool.submit(new Runnable() {
         def run() : Unit = fuzzLoop(targetName, coverageSet, workStack, stats)
       })
-    })
+    }).toList
 
     pool.shutdown()
 
-    while (!pool.isTerminated) {
+    while(futures.exists(!_.isDone)) {
       pool.awaitTermination(5, TimeUnit.SECONDS)
-      println(stats.getStats())
+      System.err.println(stats.getStats)
+    }
+
+    val fails = futures.filter(_.get().isInstanceOf[Throwable])
+    if (fails.isEmpty) {
+      fails.foreach(f => f.get().asInstanceOf[Throwable].printStackTrace())
     }
 
   }
 
   private def fuzzLoop(targetName : String,
-                       coverageSet : mutable.HashSet[String],
-                       workStack : mutable.ArrayStack[Array[Byte]],
+                       coverageSet : ConcurrentHashMap[String, Object],
+                       workQueue : BlockingQueue[Array[Byte]],
                        stats : Stats): Unit = {
 
-    def loop() {
-
-      if (workStack.isEmpty) {
-        Corpus.readCorpusInputStack(arguments, workStack)
-      }
-
-      val old = workStack.pop()
-
-      val newInput = Corpus.mutate(old, rand)
-      val (result, hash, ex) = runOnce(targetName, newInput)
-      if (!coverageSet.contains(hash)) {
-        coverageSet.add(hash)
-
-        Corpus.saveResult(newInput, result, ex, arguments)
-        if (result) {
-          workStack.push(newInput)
-        }
-        stats.addRun(success = result, newPath = true)
-      } else {
-        stats.addRun(success = result, newPath = false)
-      }
-
-      loop()
-    }
-    loop()
-  }
-
-  private def runOnce(targetName : String, input : Array[Byte]) : (Boolean, String, Option[Throwable]) = {
+    Thread.currentThread().setUncaughtExceptionHandler((t, e) => {
+      System.err.println("Exception thrown in thread " + t.getName)
+      e.printStackTrace(System.err)
+    })
 
     val memoryClassLoader = new CoverageMemoryClassLoader()
-    memoryClassLoader.addClass(targetName)
 
-    val targetClass = memoryClassLoader.loadClass(targetName)
+    memoryClassLoader.addClass(targetName)
+    val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[_ <: FuzzTest]]
+
+    Thread.currentThread().setContextClassLoader(memoryClassLoader)
+
+    val obj = new Object() // don't create a new object for every entry in our hash "set"
+    while(true) {
+
+      if (workQueue.isEmpty) {
+        Corpus.readCorpusInputStack(arguments, workQueue)
+      }
+
+      val old = workQueue.poll()
+
+      val start = System.currentTimeMillis()
+      val (result, hash, ex) = runOnce(targetClass, old, memoryClassLoader)
+      val totalTime = System.currentTimeMillis() - start
+
+      if (!coverageSet.containsKey(hash)) {
+        coverageSet.put(hash, obj)
+        Corpus.saveResult(old, result, ex, arguments)
+        if (result) {
+          val newInput = Corpus.mutate(old, rand)
+          workQueue.put(newInput)
+        }
+        stats.addRun(success = result, newPath = true, totalTime)
+      } else {
+        stats.addRun(success = result, newPath = false, totalTime)
+      }
+    }
+
+  }
+
+  private def runOnce(targetClass : Class[_ <: FuzzTest], input : Array[Byte], memoryClassLoader : CoverageMemoryClassLoader) : (Boolean, String, Option[Throwable]) = {
 
     // Here we execute our test target class through its interface
-    val targetInstance = targetClass.newInstance.asInstanceOf[FuzzTest]
+    memoryClassLoader.reset()
+
+    val targetInstance = targetClass.newInstance
     try {
       val result = targetInstance.test(input)
       (result, memoryClassLoader.generateCoverageHash(), None)

@@ -2,6 +2,8 @@ package org.catapult.sa.tribble;
 
 /**
  * Tag for method that implements a fuzz test.
+ *
+ * Note: The implementing class must have a default constructor.
  */
 public interface FuzzTest {
     /**
