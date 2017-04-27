@@ -18,10 +18,12 @@ object App extends Arguments {
 
   private val TARGET_CLASS = "targetClass"
   private val TARGET_PATH = "targetPath"
+  private val THREAD_COUNT = "threads"
 
   override def allowedArgs(): List[Argument] = List(
     Argument(Corpus.CORPUS, "corpus"),
     Argument(Corpus.FAILED, "failed"),
+    Argument(THREAD_COUNT, "2"),
     Argument(TARGET_CLASS),
     Argument(TARGET_PATH)
   )
@@ -33,6 +35,11 @@ object App extends Arguments {
     if (StringUtils.isBlank(arguments.getOrElse(TARGET_CLASS, "")) &&
       StringUtils.isBlank(arguments.getOrElse(TARGET_PATH, ""))) {
       println("ERROR: One of targetClass or targetPath must be set")
+      return
+    }
+
+    if (!StringUtils.isNumeric(arguments.getOrElse(THREAD_COUNT, ""))) {
+      println("ERROR: Thread count must be numeric")
       return
     }
 
@@ -73,8 +80,7 @@ object App extends Arguments {
     workStack.put(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(arguments, workStack)
 
-    // TODO : Thread count option
-    val pool: ExecutorService = Executors.newFixedThreadPool(1)
+    val pool: ExecutorService = Executors.newFixedThreadPool(arguments.getOrElse(THREAD_COUNT, "2").toInt)
 
     Thread.setDefaultUncaughtExceptionHandler((t, e) => {
       System.err.println("Exception thrown in thread " + t.getName)
@@ -117,12 +123,22 @@ object App extends Arguments {
     val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[_ <: FuzzTest]]
 
     Thread.currentThread().setContextClassLoader(memoryClassLoader)
-
+    var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
     while(true) {
 
       if (workQueue.isEmpty) {
         Corpus.readCorpusInputStack(arguments, workQueue)
+        if (pathCountLastLoad == coverageSet.size()) {
+          // System.err.println("No change from last reset point. Performing large mutation.")
+          // the last run did not generate any new coverages. Really randomise the corpus this time.
+          val drain = new java.util.ArrayList[Array[Byte]]()
+          workQueue.drainTo(drain)
+          // mutate lots of times and try again
+          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => Corpus.mutate(a, rand))).asJavaCollection)
+        }
+        pathCountLastLoad = coverageSet.size()
+
       }
 
       val old = workQueue.poll()

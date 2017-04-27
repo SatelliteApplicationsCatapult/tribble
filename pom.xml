@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.catapult.sa</groupId>
-  <artifactId>tribble</artifactId>i
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>tribble</artifactId>
+  <version>0.1-SNAPSHOT</version>
   <inceptionYear>2008</inceptionYear>
   <properties>
     <scala.version>2.12.1</scala.version>
@@ -51,7 +51,7 @@
 
     <dependency>
       <groupId>org.jacoco</groupId>
-      <artifactId>jacoco</artifactId>
+      <artifactId>org.jacoco.core</artifactId>
       <version>0.7.9</version>
     </dependency>
 
@@ -68,6 +68,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
         <executions>
           <execution>
             <goals>
@@ -81,23 +82,6 @@
           <args>
             <arg>-target:jvm-1.8</arg>
           </args>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <configuration>
-          <downloadSources>true</downloadSources>
-          <buildcommands>
-            <buildcommand>ch.epfl.lamp.sdt.core.scalabuilder</buildcommand>
-          </buildcommands>
-          <additionalProjectnatures>
-            <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
-          </additionalProjectnatures>
-          <classpathContainers>
-            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
-            <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
-          </classpathContainers>
         </configuration>
       </plugin>
     </plugins>
