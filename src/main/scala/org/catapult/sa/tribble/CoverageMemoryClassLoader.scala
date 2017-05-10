@@ -15,8 +15,9 @@ import scala.collection.mutable
 
 /**
   * Classloader that will automatically instrument classes as it is asked for.
-  *
-  * TODO: It might be worth keeping the same ClassLoader but resetting the stats some how. Investigate
+  * Unless the classes start with one of the ignores prefixes.
+  * Which default to java. javax. sun. org.catapult.sa.tribble.
+  * Extra ones can be added with the addFilter(string) method
   */
 class CoverageMemoryClassLoader() extends ClassLoader {
 
@@ -28,8 +29,8 @@ class CoverageMemoryClassLoader() extends ClassLoader {
   private val definitionClasses = new mutable.HashMap[String, Class[_]]()
   private val instr = new Instrumenter(runtime)
 
-  private val ignores = new mutable.ArrayBuffer[String](4)
-  ignores.append("java.", "javax.", "sun.", "org.catapult.sa.tribble.")
+  private val ignores = new mutable.ArrayBuffer[String](5)
+  ignores.append("java.", "javax.", "sun.", "org.jacoco.", "org.catapult.sa.tribble.")
 
   /**
     * Pre load a class into this classloader
