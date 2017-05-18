@@ -2,16 +2,14 @@
 
 Experiments with fuzz testing java applications using coverage to guide the process. Heavily based on GoFuzz and AFL
 
-Uses Jacoco to get coverage stats. Spring to find classes in the class path that implement `FuzzTest` or a command line 
-parameter to specify a class to run.
+Uses Jacoco to get coverage stats.
 
 ## Usage
 
 * Include this library in your project.
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. A return of false
 or and exception thrown from this class is considered to be a failure.
-* Run `org.catapult.sa.tribble.App` passing `--targetClass` or `--targetPath` to set where your implementation of 
-`FuzzTest` lives
+* Run `org.catapult.sa.tribble.App` passing `--targetClass` to set where your implementation of `FuzzTest` lives
 
 
 ## Why?
@@ -41,4 +39,5 @@ paths through the application we have found.
 * Multi node (Clustering, boss/worker client server system)
 * Smarter mutation strategies (See AFL and GoFuzz)
 * Find minimum version of input that will produce same branch before saving.
+* Maven plugin to make running easy
 * Support Scala 2.11.7 as a minimum (Spark support)
