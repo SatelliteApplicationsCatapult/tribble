@@ -5,10 +5,14 @@ import java.util.concurrent._
 import org.apache.commons.lang.StringUtils
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 /**
- * Hello world! with calculated coverage
+ *
  * TODO: More complex test case.
+ * TODO: Iteration count parameter.
+ * TODO: Maven plugin.
  *
  */
 object App extends Arguments {
@@ -160,20 +164,28 @@ object App extends Arguments {
     // Here we execute our test target class through its interface
     memoryClassLoader.reset()
 
-    var targetInstance = targetClass.newInstance
-    try {
-      // TODO: Background this and time out.
-      val result = targetInstance.test(input)
-      (result, memoryClassLoader.generateCoverageHash(), None)
-    } catch {
-      case e : OutOfMemoryError => // Out of memory. Clean up what we can and force a GC before handing back up the stack
-        targetInstance = null
-        System.gc()
-        (false, memoryClassLoader.generateCoverageHash(), Some(e))
-      case e : Throwable =>
-        (false, memoryClassLoader.generateCoverageHash(), Some(e))
-    }
+    var targetInstance = targetClass.newInstance()
 
+    try {
+
+      implicit val context = ExecutionContext.global
+      Await.result(Future {
+        try {
+          val result = targetInstance.test(input)
+          (result, memoryClassLoader.generateCoverageHash(), None)
+        } catch {
+          case e: OutOfMemoryError => // Out of memory. Clean up what we can and force a GC before handing back up the stack
+            targetInstance = null
+            System.gc()
+            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+          case e: Throwable =>
+            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+        }
+
+      }, Duration(1000L, TimeUnit.MILLISECONDS))
+    } catch {
+      case e : TimeoutException => (false, memoryClassLoader.generateCoverageHash(), Some(e))
+    }
   }
 
   private def createClassLoader[T <: FuzzTest](targetName : String) : (CoverageMemoryClassLoader, Class[T]) = {
