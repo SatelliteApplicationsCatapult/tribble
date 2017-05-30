@@ -1,5 +1,7 @@
 # Tribble
 
+[![Build Status](https://travis-ci.org/SatelliteApplicationsCatapult/tribble.svg?branch=master)](https://travis-ci.org/SatelliteApplicationsCatapult/tribble)
+
 A fuzz testing tool for java applications using coverage to guide the process. 
 Heavily based on the wonderful GoFuzz and AFL.
 
