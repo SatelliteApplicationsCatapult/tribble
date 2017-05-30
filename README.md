@@ -17,6 +17,7 @@ to put tribble into maven central.
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-core</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <scope>test</scope>
 </dependency>
 ```
 * Add the plugin to your pom.
@@ -31,7 +32,7 @@ to put tribble into maven central.
 </plugin>
 ```
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. If this class returns false
-or throws an exception the run is considered to be a failure.
+or throws an exception the run is considered to be a failure. This class can be in the `src/test` tree
 * Configure the target class name in the plugin.
 * Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
 your application. The more the merrier.
