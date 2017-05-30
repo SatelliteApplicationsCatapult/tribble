@@ -29,7 +29,7 @@ object App extends Arguments {
 
   def main(args : Array[String]) : Unit = {
 
-    arguments = processArgs(args)
+    setArgs(args)
 
     if (StringUtils.isBlank(arguments.getOrElse(TARGET_CLASS, ""))) {
       println("ERROR: targetClass must be set")
@@ -50,14 +50,18 @@ object App extends Arguments {
 
     val targetName = arguments(TARGET_CLASS)
 
-    fuzzWithThreads(targetName.toString)
+    fuzzWithThreads(targetName.toString, this.getClass.getClassLoader)
   }
 
-  private var arguments : Map[String, String] = _
+  var arguments : Map[String, String] = _
+
+  def setArgs(args : Array[String]) : Unit = {
+    arguments = processArgs(args)
+  }
 
   lazy val rand = new Random()
 
-  private def fuzzWithThreads(targetName : String) : Unit = {
+  def fuzzWithThreads(targetName : String, cl : ClassLoader) : Unit = {
     val coverageSet = new ConcurrentHashMap[String, Object]()
 
     val stats = new Stats()
@@ -66,7 +70,12 @@ object App extends Arguments {
     workStack.put(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(arguments, workStack)
 
-    val pool: ExecutorService = Executors.newFixedThreadPool(arguments.getOrElse(THREAD_COUNT, "2").toInt)
+
+    val pool: ExecutorService = Executors.newFixedThreadPool(arguments.getOrElse(THREAD_COUNT, "2").toInt, (r: Runnable) => {
+      val result = new Thread(r)
+      result.setContextClassLoader(cl)
+      result
+    })
 
     Thread.setDefaultUncaughtExceptionHandler((t, e) => {
       System.err.println("Exception thrown in thread " + t.getName)
@@ -189,7 +198,7 @@ object App extends Arguments {
   }
 
   private def createClassLoader[T <: FuzzTest](targetName : String) : (CoverageMemoryClassLoader, Class[T]) = {
-    val memoryClassLoader = new CoverageMemoryClassLoader()
+    val memoryClassLoader = new CoverageMemoryClassLoader(Thread.currentThread().getContextClassLoader)
 
     memoryClassLoader.addClass(targetName)
     val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[T]]

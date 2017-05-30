@@ -31,6 +31,12 @@ object Corpus {
       Files.createDirectory(Paths.get(arguments(Corpus.CORPUS)))
     }
 
+    val files = corpusFile.listFiles()
+    if (files == null || files.isEmpty) {
+      println("Corpus folder exists but is empty. WARNING You must provide an initial entry")
+      return false
+    }
+
     val failedFile = new File(arguments(Corpus.FAILED))
     if (failedFile.exists() && (!failedFile.isDirectory || !failedFile.canWrite)) {
       println("ERROR: failed path exists but is not a directory: " + failedFile.getAbsolutePath)
@@ -65,8 +71,9 @@ object Corpus {
   }
 
   def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], arguments: Map[String, String]): Unit = {
+
     val md5 = MessageDigest.getInstance("MD5")
-    val filename = DatatypeConverter.printHexBinary(md5.digest(input))
+    val filename = if(input == null) "null" else DatatypeConverter.printHexBinary(md5.digest(input))
 
     if (!success) { // failed, record it in the crashers. But don't keep it for mutations.
       Corpus.saveArray(input, s"${arguments(FAILED)}/$filename.failed")

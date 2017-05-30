@@ -9,7 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>tribble-core</artifactId>
+    <artifactId>tribble-test</artifactId>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>tribble-core</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 
     <build>
@@ -33,19 +42,17 @@
                     </args>
                 </configuration>
             </plugin>
-        </plugins>
-    </build>
 
-    <reporting>
-        <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>org.catapult.sa</groupId>
+                <artifactId>tribble-maven-plugin</artifactId>
+                <version>0.1-SNAPSHOT</version>
                 <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
+                    <target>org.catapult.sa.testcase.TestCase</target>
                 </configuration>
             </plugin>
         </plugins>
-    </reporting>
+    </build>
+
 
 </project>
