@@ -3,38 +3,36 @@ package org.catapult.sa.tribble
 import java.util.concurrent._
 
 import org.apache.commons.lang.StringUtils
-import org.springframework.beans.factory.config.BeanDefinition
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
-import org.springframework.core.`type`.filter.AssignableTypeFilter
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 /**
- * Hello world! with calculated coverage
+ *
  * TODO: More complex test case.
+ * TODO: Iteration count parameter.
+ * TODO: Maven plugin.
  *
  */
 object App extends Arguments {
 
   private val TARGET_CLASS = "targetClass"
-  private val TARGET_PATH = "targetPath"
   private val THREAD_COUNT = "threads"
 
   override def allowedArgs(): List[Argument] = List(
     Argument(Corpus.CORPUS, "corpus"),
     Argument(Corpus.FAILED, "failed"),
     Argument(THREAD_COUNT, "2"),
-    Argument(TARGET_CLASS),
-    Argument(TARGET_PATH)
+    Argument(TARGET_CLASS)
   )
 
   def main(args : Array[String]) : Unit = {
 
-    arguments = processArgs(args)
+    setArgs(args)
 
-    if (StringUtils.isBlank(arguments.getOrElse(TARGET_CLASS, "")) &&
-      StringUtils.isBlank(arguments.getOrElse(TARGET_PATH, ""))) {
-      println("ERROR: One of targetClass or targetPath must be set")
+    if (StringUtils.isBlank(arguments.getOrElse(TARGET_CLASS, ""))) {
+      println("ERROR: targetClass must be set")
       return
     }
 
@@ -50,28 +48,20 @@ object App extends Arguments {
     // TODO: Argument for seed? -- Not sure having saved problems it should be ok.
     rand.setSeed(System.currentTimeMillis())
 
-    val targetName = if (StringUtils.isNotBlank(arguments.getOrElse(TARGET_CLASS, ""))) {
-      arguments.get(TARGET_CLASS)
-    } else {
-      println("Class path scanning for instances of FuzzTest in " + arguments(TARGET_PATH))
-      val scanner = new ClassPathScanningCandidateComponentProvider(true)
-      scanner.addIncludeFilter(new AssignableTypeFilter(classOf[FuzzTest]))
+    val targetName = arguments(TARGET_CLASS)
 
-      // Not sure why the implicit conversation is not kicking in here but this works.
-      asScalaSet(scanner.findCandidateComponents(arguments(TARGET_PATH))).map((bd : BeanDefinition) => {
-        println(bd.getBeanClassName)
-        bd.getBeanClassName
-      }).head
-    }
-
-    fuzzWithThreads(targetName.toString)
+    fuzzWithThreads(targetName.toString, this.getClass.getClassLoader)
   }
 
-  private var arguments : Map[String, String] = _
+  var arguments : Map[String, String] = _
+
+  def setArgs(args : Array[String]) : Unit = {
+    arguments = processArgs(args)
+  }
 
   lazy val rand = new Random()
 
-  private def fuzzWithThreads(targetName : String) : Unit = {
+  def fuzzWithThreads(targetName : String, cl : ClassLoader) : Unit = {
     val coverageSet = new ConcurrentHashMap[String, Object]()
 
     val stats = new Stats()
@@ -80,7 +70,12 @@ object App extends Arguments {
     workStack.put(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(arguments, workStack)
 
-    val pool: ExecutorService = Executors.newFixedThreadPool(arguments.getOrElse(THREAD_COUNT, "2").toInt)
+
+    val pool: ExecutorService = Executors.newFixedThreadPool(arguments.getOrElse(THREAD_COUNT, "2").toInt, (r: Runnable) => {
+      val result = new Thread(r)
+      result.setContextClassLoader(cl)
+      result
+    })
 
     Thread.setDefaultUncaughtExceptionHandler((t, e) => {
       System.err.println("Exception thrown in thread " + t.getName)
@@ -117,12 +112,8 @@ object App extends Arguments {
       e.printStackTrace(System.err)
     })
 
-    val memoryClassLoader = new CoverageMemoryClassLoader()
+    var (memoryClassLoader, targetClass) = createClassLoader(targetName)
 
-    memoryClassLoader.addClass(targetName)
-    val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[_ <: FuzzTest]]
-
-    Thread.currentThread().setContextClassLoader(memoryClassLoader)
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
     while(true) {
@@ -147,8 +138,23 @@ object App extends Arguments {
       val (result, hash, ex) = runOnce(targetClass, old, memoryClassLoader)
       val totalTime = System.currentTimeMillis() - start
 
+      // If we had an error and its an out of memory error.
+      // Kill off the class and the classloader. Manually GC and then recreate the classloader.
+      if (ex.isDefined) {
+        if (ex.get.isInstanceOf[OutOfMemoryError]) {
+          targetClass = null
+          memoryClassLoader = null
+
+          System.gc()
+          val (newMemoryClassLoader, newTargetClass) = createClassLoader(targetName)
+          memoryClassLoader = newMemoryClassLoader
+          targetClass = newTargetClass
+        }
+      }
+
       if (!coverageSet.containsKey(hash)) {
         coverageSet.put(hash, obj)
+
         Corpus.saveResult(old, result, ex, arguments)
         if (result) {
           val newInput = Corpus.mutate(old, rand)
@@ -167,18 +173,39 @@ object App extends Arguments {
     // Here we execute our test target class through its interface
     memoryClassLoader.reset()
 
-    val targetInstance = targetClass.newInstance
+    var targetInstance = targetClass.newInstance()
+
     try {
-      val result = targetInstance.test(input)
-      (result, memoryClassLoader.generateCoverageHash(), None)
+
+      implicit val context = ExecutionContext.global
+      Await.result(Future {
+        try {
+          val result = targetInstance.test(input)
+          (result, memoryClassLoader.generateCoverageHash(), None)
+        } catch {
+          case e: OutOfMemoryError => // Out of memory. Clean up what we can and force a GC before handing back up the stack
+            targetInstance = null
+            System.gc()
+            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+          case e: Throwable =>
+            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+        }
+
+      }, Duration(1000L, TimeUnit.MILLISECONDS))
     } catch {
-      case e : Throwable =>
-        (false, memoryClassLoader.generateCoverageHash(), Some(e))
+      case e : TimeoutException => (false, memoryClassLoader.generateCoverageHash(), Some(e))
     }
-
-
   }
 
+  private def createClassLoader[T <: FuzzTest](targetName : String) : (CoverageMemoryClassLoader, Class[T]) = {
+    val memoryClassLoader = new CoverageMemoryClassLoader(Thread.currentThread().getContextClassLoader)
+
+    memoryClassLoader.addClass(targetName)
+    val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[T]]
+
+    Thread.currentThread().setContextClassLoader(memoryClassLoader)
+    (memoryClassLoader, targetClass)
+  }
 
 }
 

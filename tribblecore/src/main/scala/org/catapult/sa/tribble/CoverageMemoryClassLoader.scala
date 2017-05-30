@@ -19,7 +19,7 @@ import scala.collection.mutable
   * Which default to java. javax. sun. org.catapult.sa.tribble.
   * Extra ones can be added with the addFilter(string) method
   */
-class CoverageMemoryClassLoader() extends ClassLoader {
+class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(parent) {
 
   private val runtime = new LoggerRuntime
 
@@ -37,7 +37,8 @@ class CoverageMemoryClassLoader() extends ClassLoader {
     * @param name name of the class.
     */
   def addClass(name : String) : Array[Byte] = {
-    instr.instrument(CoverageMemoryClassLoader.getClassStream(name), name)
+    val classFile = CoverageMemoryClassLoader.getClassStream(name, parent)
+    instr.instrument(classFile, name)
   }
 
   /**
@@ -89,7 +90,7 @@ class CoverageMemoryClassLoader() extends ClassLoader {
 
     this.getDefinedClasses.foreach(e => {
       // have to reload the classes here as we need the un-instrumented ones.
-      analyzer.analyzeClass(CoverageMemoryClassLoader.getClassStream(e), e)
+      analyzer.analyzeClass(CoverageMemoryClassLoader.getClassStream(e, parent), e)
     })
 
     // make sure we are always generating the hash in the same order.
@@ -130,8 +131,8 @@ class CoverageMemoryClassLoader() extends ClassLoader {
 }
 
 object CoverageMemoryClassLoader {
-  def getClassStream(name : String) : InputStream = {
-    val res = '/' + name.replace('.', '/') + ".class"
-    getClass.getResourceAsStream(res)
+  def getClassStream(name : String, parent : ClassLoader) : InputStream = {
+    val res = name.replace('.', '/') + ".class"
+    parent.getResourceAsStream(res)
   }
 }

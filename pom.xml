@@ -1,11 +1,41 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>org.catapult.sa</groupId>
   <artifactId>tribble</artifactId>
   <version>0.1-SNAPSHOT</version>
-  <inceptionYear>2008</inceptionYear>
+  <packaging>pom</packaging>
+
+  <inceptionYear>2017</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>wilselwood</id>
+      <name>Wil Selwood</name>
+      <email>wil.selwood@sa.catapult.org.uk</email>
+    </developer>
+  </developers>
+
+  <modules>
+    <module>tribblecore</module>
+    <module>tribblemavenplugin</module>
+    <module>tribbletest</module>
+  </modules>
+
   <properties>
+    <maven.version>3.3.9</maven.version>
     <scala.version>2.12.1</scala.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
   <repositories>
@@ -29,12 +59,6 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-support</artifactId>
-      <version>4.3.7.RELEASE</version>
     </dependency>
 
     <dependency>
@@ -63,38 +87,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <scalaVersion>${scala.version}</scalaVersion>
-          <args>
-            <arg>-target:jvm-1.8</arg>
-          </args>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <configuration>
-          <scalaVersion>${scala.version}</scalaVersion>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>
