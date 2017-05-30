@@ -49,7 +49,7 @@ Because we needed one, you probably do too. If you don't think you do you don't 
 Fuzz testing (or smoke testing) is the process of sending "random" data (we'll come back to this in a bit) into a system 
 and seeing what happens. The process of doing this has been around for a long time. However most of the time the input is
 generated from known input and has no way of knowing what happened inside the system under test. Systems like AFL and 
-GoFuzz are able to iterate the system and know when they have found new code paths.  This enables them to further modify 
+GoFuzz are able to instrument the system and know when they have found new code paths.  This enables them to further modify 
 the input data to work their way through the application.
 
 Using systems like this is more effective and efficient that just sending random data into the system. Unfortunately such
