@@ -132,7 +132,11 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
 
 object CoverageMemoryClassLoader {
   def getClassStream(name : String, parent : ClassLoader) : InputStream = {
-    val res = name.replace('.', '/') + ".class"
-    parent.getResourceAsStream(res)
+    val res =  name.replace('.', '/') + ".class"
+    val result = parent.getResourceAsStream(res)
+    if (result == null) {
+      throw new IllegalArgumentException("Can not find class " + res)
+    }
+    result
   }
 }

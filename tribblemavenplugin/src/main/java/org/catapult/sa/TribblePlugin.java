@@ -25,7 +25,7 @@ import java.util.List;
         defaultPhase = LifecyclePhase.TEST,
         requiresDependencyCollection = ResolutionScope.TEST,
         requiresDependencyResolution = ResolutionScope.TEST)
-@Execute(phase = LifecyclePhase.PACKAGE)
+@Execute(phase = LifecyclePhase.TEST_COMPILE)
 public class TribblePlugin extends AbstractMojo {
 
     @Parameter(property = "fuzztest.target", required = true)
@@ -47,12 +47,13 @@ public class TribblePlugin extends AbstractMojo {
                 realm = world.newRealm("plugin.tribble.container", this.getClass().getClassLoader());
             }
             ClassRealm projectRealm = realm.createChildRealm("theproject");
-            String output =  project.getBuild().getOutputDirectory();
-            projectRealm.addURL(new File(output).toURI().toURL());
+
+            String outputDir =  project.getBuild().getOutputDirectory();
+            String testDir = project.getBuild().getTestOutputDirectory();
+            projectRealm.addURL(new File(outputDir).toURI().toURL());
+            projectRealm.addURL(new File(testDir).toURI().toURL());
 
             Thread.currentThread().setContextClassLoader(projectRealm);
-
-            getLog().info( "Hello, world." );
 
             String[] args = {"--targetClass", target};
 
