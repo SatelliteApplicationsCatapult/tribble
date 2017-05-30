@@ -31,14 +31,26 @@ to put tribble into maven central.
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. If this class returns false
 or throws an exception the run is considered to be a failure.
 * Configure the target class name in the plugin.
+* Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
+your application. The more the merrier.
 * Run `mvn tribble:fuzztest` to start a run.
 
 ### Command Line
 * Include this library in your project.
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. If this class returns false
 or throws an exception the run is considered to be a failure.
+* Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
+your application. The more the merrier.
 * Run `org.catapult.sa.tribble.App` passing `--targetClass` to set where your implementation of `FuzzTest` lives and the
 required class path.
+
+### General Usage
+Stats will be printed to stderr at regular intervals. A folder called `failed` will be created on startup and populated 
+with both inputs and stack traces that they cause. The file names will be the md5 hash of the input. Inputs which generate
+new code paths will be saved to the corpus directory with a file name that is an md5 hash of the code coverage stats.
+
+Try and avoid printing to stdout and stderr in your test cases this can slow things down quite a lot. There is a one second 
+time out on each test run. 
 
 ## Why?
 
