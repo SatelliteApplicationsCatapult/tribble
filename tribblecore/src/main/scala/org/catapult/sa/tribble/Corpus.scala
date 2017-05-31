@@ -217,7 +217,12 @@ object Corpus {
     b(';'),
     b(' '),
     b('-'),
-    b('!')
+    b('!'),
+    b('\r'),
+    b('\n'),
+    b('\t'),
+    b(','),
+    b('*')
   )
 
   private lazy val interestingInts = List[Int](
