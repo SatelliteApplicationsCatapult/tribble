@@ -5,7 +5,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
-import org.catapult.sa.tribble.App;
+import org.catapult.sa.tribble.Fuzzer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -26,6 +26,14 @@ public class TribblePlugin extends AbstractMojo {
     @Parameter(property = "fuzztest.target", required = true)
     public String target;
 
+    @Parameter(property = "fuzztest.corpus", required = true, defaultValue = "corpus")
+    public String corpusPath;
+
+    @Parameter(property = "fuzztest.failed", required = true, defaultValue = "failed")
+    public String failedPath;
+
+    @Parameter(property = "fuzztest.threads", required = true, defaultValue = "2")
+    public int threads;
 
     @Parameter( defaultValue="${project}", required = true, readonly = true)
     public MavenProject project;
@@ -57,10 +65,9 @@ public class TribblePlugin extends AbstractMojo {
 
             Thread.currentThread().setContextClassLoader(projectRealm);
 
-            String[] args = {"--targetClass", target};
+            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, threads);
+            fuzzer.run(target, projectRealm);
 
-            App.setArgs(args);
-            App.fuzzWithThreads(target, projectRealm);
         } catch (DuplicateRealmException | MalformedURLException e) {
             e.printStackTrace();
         }
