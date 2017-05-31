@@ -16,11 +16,8 @@ import scala.util.Random
   */
 object Corpus {
 
-  val CORPUS = "corpus"
-  val FAILED = "failed"
-
-  def validateDirectories(arguments: Map[String, String]): Boolean = {
-    val corpusFile = new File(arguments(Corpus.CORPUS))
+  def validateDirectories(corpusPath : String, failedPath : String): Boolean = {
+    val corpusFile = new File(corpusPath)
     if (corpusFile.exists() && (!corpusFile.isDirectory || !corpusFile.canWrite)) {
       println("ERROR: corpus path exists but is not a directory: " + corpusFile.getAbsolutePath)
       return false
@@ -28,7 +25,7 @@ object Corpus {
 
     if (!corpusFile.exists()) {
       println("Corpus folder does not exist. Creating. WARNING you should give the tribbles some guidance where to start.")
-      Files.createDirectory(Paths.get(arguments(Corpus.CORPUS)))
+      Files.createDirectory(Paths.get(corpusPath))
     }
 
     val files = corpusFile.listFiles()
@@ -37,7 +34,7 @@ object Corpus {
       return false
     }
 
-    val failedFile = new File(arguments(Corpus.FAILED))
+    val failedFile = new File(failedPath)
     if (failedFile.exists() && (!failedFile.isDirectory || !failedFile.canWrite)) {
       println("ERROR: failed path exists but is not a directory: " + failedFile.getAbsolutePath)
       return false
@@ -45,7 +42,7 @@ object Corpus {
 
     if (!failedFile.exists()) {
       println("Failed directory does not exist. Creating.")
-      Files.createDirectory(Paths.get(arguments(Corpus.FAILED)))
+      Files.createDirectory(Paths.get(failedPath))
     }
 
     true
@@ -53,10 +50,10 @@ object Corpus {
 
   private val lock = new Object()
 
-  def readCorpusInputStack(arguments: Map[String, String], stack: BlockingQueue[Array[Byte]]): Unit = {
+  def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[Array[Byte]]): Unit = {
     lock.synchronized {
       if (stack.isEmpty) { // don't write it twice.
-        Files.newDirectoryStream(Paths.get(arguments(CORPUS))).forEach { f =>
+        Files.newDirectoryStream(Paths.get(corpusPath)).forEach { f =>
           val stream = new FileInputStream(f.toFile)
           if (f.getFileName.endsWith(".hex")) {
             val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
@@ -70,21 +67,21 @@ object Corpus {
     }
   }
 
-  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], arguments: Map[String, String]): Unit = {
+  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], corpusPath : String, failedPath : String): Unit = {
 
     val md5 = MessageDigest.getInstance("MD5")
     val filename = if(input == null) "null" else DatatypeConverter.printHexBinary(md5.digest(input))
 
     if (!success) { // failed, record it in the crashers. But don't keep it for mutations.
-      Corpus.saveArray(input, s"${arguments(FAILED)}/$filename.failed")
+      Corpus.saveArray(input, s"$failedPath/$filename.failed")
       ex.foreach(e => {
-        val exOut = new PrintStream(new FileOutputStream(s"${arguments(FAILED)}/$filename.stacktrace"))
+        val exOut = new PrintStream(new FileOutputStream(s"$failedPath/$filename.stacktrace"))
         e.printStackTrace(exOut)
         exOut.flush()
         exOut.close()
       })
     } else { // new and didn't fail so add it to our corpus
-      Corpus.saveArray(input, s"${arguments(CORPUS)}/$filename.input")
+      Corpus.saveArray(input, s"$corpusPath/$filename.input")
     }
   }
 
