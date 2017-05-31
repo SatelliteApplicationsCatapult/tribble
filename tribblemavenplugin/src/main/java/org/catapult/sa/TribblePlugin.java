@@ -1,5 +1,6 @@
 package org.catapult.sa;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
@@ -46,6 +47,13 @@ public class TribblePlugin extends AbstractMojo {
             String testDir = project.getBuild().getTestOutputDirectory();
             projectRealm.addURL(new File(outputDir).toURI().toURL());
             projectRealm.addURL(new File(testDir).toURI().toURL());
+
+            for (Artifact a: project.getArtifacts()) {
+                // don't add tribble again. Its already there via our own dependencies. Weird things happen if not.
+                if (!(a.getGroupId().equals("org.catapult.sa") && a.getArtifactId().equals("tribble-core"))) {
+                    projectRealm.addURL(a.getFile().toURI().toURL());
+                }
+            }
 
             Thread.currentThread().setContextClassLoader(projectRealm);
 
