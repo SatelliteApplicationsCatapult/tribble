@@ -11,7 +11,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 
 ### Maven
 * Include tribble-core as a dependency. At the moment you'll need to run `mvn install` from this project until I get time
-to put tribble into maven central.
+to put tribble into JCenter.
 ```
 <dependency>
     <groupId>org.catapult.sa</groupId>
@@ -79,7 +79,8 @@ coverage stats for a run, which lets us work out the paths through the applicati
 
 ### Why the name Tribble?
 
-Lots of small fuzzy creatures. It seemed like a reasonable name when I started this.
+[Lots](https://en.wikipedia.org/wiki/Tribble) of small fuzzy creatures from Star trek. It seemed like a reasonable name 
+when I started this.
 
 "Letting engineers name things is like letting the marketing department build them" 
 
@@ -90,3 +91,12 @@ Lots of small fuzzy creatures. It seemed like a reasonable name when I started t
 * Find minimum version of input that will produce same branch before saving
 * Support Scala 2.11.7 as a minimum (Spark support)
 * Gradle support
+
+## Contributing 
+
+See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_OF_CONDUCT.md)
+
+## Thanks
+
+This project owes a huge thank you to the [AFL](http://lcamtuf.coredump.cx/afl/) project and [go-fuzz](https://github.com/dvyukov/go-fuzz)
+ for the ideas. [jacoco](https://github.com/jacoco/jacoco) for the code coverage tool this is built on top of.
