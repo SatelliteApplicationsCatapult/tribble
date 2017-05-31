@@ -135,8 +135,14 @@ object CoverageMemoryClassLoader {
     val res =  name.replace('.', '/') + ".class"
     val result = parent.getResourceAsStream(res)
     if (result == null) {
-      throw new IllegalArgumentException("Can not find class " + res)
+      val tryAgain = parent.getResourceAsStream("/" + res)
+      if (tryAgain == null) {
+        throw new IllegalArgumentException("Can not find class " + res)
+      } else {
+        tryAgain
+      }
+    } else {
+      result
     }
-    result
   }
 }
