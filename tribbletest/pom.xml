@@ -5,21 +5,19 @@
     <parent>
         <artifactId>tribble</artifactId>
         <groupId>org.catapult.sa</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>tribble-test</artifactId>
 
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>tribble-core</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1</version>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
