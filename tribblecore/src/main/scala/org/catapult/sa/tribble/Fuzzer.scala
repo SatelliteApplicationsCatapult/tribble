@@ -11,7 +11,10 @@ import scala.util.Random
 /**
   * Main implementation of fuzzing logic.
   */
-class Fuzzer(corpusPath : String = "corpus", failedPath : String = "failed", threadCount : Int = 2) {
+class Fuzzer(corpusPath : String = "corpus",
+             failedPath : String = "failed",
+             threadCount : Int = 2,
+             timeout : Long = 1000L) {
 
   val rand = new Random()
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
@@ -147,7 +150,7 @@ class Fuzzer(corpusPath : String = "corpus", failedPath : String = "failed", thr
             (false, memoryClassLoader.generateCoverageHash(), Some(e))
         }
 
-      }, Duration(1000L, TimeUnit.MILLISECONDS))
+      }, Duration(timeout, TimeUnit.MILLISECONDS))
     } catch {
       case e : TimeoutException => (false, memoryClassLoader.generateCoverageHash(), Some(e))
     }
