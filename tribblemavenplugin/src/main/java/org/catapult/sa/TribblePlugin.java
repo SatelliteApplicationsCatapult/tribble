@@ -14,7 +14,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 
 /**
- *
+ * Simple maven plugin to run a fuzz test.
  */
 @Mojo(name = "fuzztest",
         defaultPhase = LifecyclePhase.TEST,
@@ -73,7 +73,7 @@ public class TribblePlugin extends AbstractMojo {
             fuzzer.run(target, projectRealm);
 
         } catch (DuplicateRealmException | MalformedURLException e) {
-            e.printStackTrace();
+            throw new MojoExecutionException("Could not run fuzz test. Class path problems.", e);
         }
     }
 }

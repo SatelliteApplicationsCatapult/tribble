@@ -11,7 +11,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 
 ### Maven
 * Add the JCenter maven repository to your pom if needed. You will need **both** repository and pluginRepository entries
-```
+```Maven POM
 <repositories>
     <repository>
         <snapshots>
@@ -35,7 +35,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 ```
 
 * Include tribble-core as a dependency. 
-```
+```Maven POM
 <dependency>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-core</artifactId>
@@ -44,7 +44,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 </dependency>
 ```
 * Add the plugin to the build section of your pom.
-```
+```Maven POM
 <plugin>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-maven-plugin</artifactId>
