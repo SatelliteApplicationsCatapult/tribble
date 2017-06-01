@@ -99,26 +99,27 @@ class Fuzzer(corpusPath : String = "corpus",
 
       // If we had an error and its an out of memory error.
       // Kill off the class and the classloader. Manually GC and then recreate the classloader.
-      if (ex.isDefined) {
-        if (ex.get.isInstanceOf[OutOfMemoryError]) {
-          targetClass = null
-          memoryClassLoader = null
+      if (ex.isDefined && ex.get.isInstanceOf[OutOfMemoryError]) {
+        targetClass = null
+        memoryClassLoader = null
 
-          System.gc()
-          val (newMemoryClassLoader, newTargetClass) = createClassLoader(targetName)
-          memoryClassLoader = newMemoryClassLoader
-          targetClass = newTargetClass
-        }
-
+        System.gc()
+        val (newMemoryClassLoader, newTargetClass) = createClassLoader(targetName)
+        memoryClassLoader = newMemoryClassLoader
+        targetClass = newTargetClass
       }
 
       val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
 
+      if (!result) {
+        Corpus.saveResult(old, result, ex, corpusPath, failedPath)
+      }
+
       if (!coverageSet.containsKey(hash)) {
         coverageSet.put(hash, obj)
 
-        Corpus.saveResult(old, result, ex, corpusPath, failedPath)
         if (result) {
+          Corpus.saveResult(old, result, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
           val newInput = Corpus.mutate(old, rand)
           workQueue.put(newInput)
         }
