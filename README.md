@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/SatelliteApplicationsCatapult/tribble.svg?branch=master)](https://travis-ci.org/SatelliteApplicationsCatapult/tribble)
 
-A fuzz testing tool for java applications using coverage to guide the process. 
+An easy to use fuzz testing tool for java applications using coverage to guide the process. 
 Heavily based on the wonderful GoFuzz and AFL.
 
 It uses Jacoco to get coverage stats and has a maven plug for running.
@@ -10,22 +10,45 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 ## Usage
 
 ### Maven
-* Include tribble-core as a dependency. At the moment you'll need to run `mvn install` from this project until I get time
-to put tribble into JCenter.
+* Add the JCenter maven repository to your pom if needed. You will need **both** repository and pluginRepository entries
+```
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>bintray</name>
+        <url>http://jcenter.bintray.com</url>
+    </repository>
+</repositories>
+<pluginRepositories>
+    <pluginRepository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>bintray-plugins</name>
+        <url>http://jcenter.bintray.com</url>
+    </pluginRepository>
+</pluginRepositories>
+```
+
+* Include tribble-core as a dependency. 
 ```
 <dependency>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-core</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <scope>test</scope>
 </dependency>
 ```
-* Add the plugin to your pom.
+* Add the plugin to the build section of your pom.
 ```
 <plugin>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-maven-plugin</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <configuration>
         <target>org.catapult.sa.testcase.TestCase</target>
     </configuration>
@@ -84,6 +107,29 @@ when I started this.
 
 "Letting engineers name things is like letting the marketing department build them" 
 
+## "Advanced" settings
+There are some extra settings you may wish to use if needed. They are accessable either from the maven plugin or the 
+command line.
+
+### Maven
+| Tag |  Description | Default |
+| --- | --- | --- |
+| target | Fully qualified class name of a class which implements `org.catapult.sa.tribble.FuzzTest` | |
+| corpusPath | Path to the corpus folder | corpus |
+| failedPath | Path to the failed folder | failed |
+| threads | Number of threads to use | 2 |
+| timeout | Time out for an individual test run in milliseconds | 1000 |
+
+### Command Line
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| --targetClass | Fully qualified class name of a class which implements `org.catapult.sa.tribble.FuzzTest` | |
+| --corpus | Path to the corpus folder | corpus |
+| --failed | Path to the failed folder | failed |
+| --threads | Number of threads to use | 2 |
+| --timeout | Time out for an individual test run in milliseconds | 1000 |
+
 ## Where next?
 
 * Multi node (Clustering, boss/worker client server system)
@@ -99,4 +145,4 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_O
 ## Thanks
 
 This project owes a huge thank you to the [AFL](http://lcamtuf.coredump.cx/afl/) project and [go-fuzz](https://github.com/dvyukov/go-fuzz)
- for the ideas. [jacoco](https://github.com/jacoco/jacoco) for the code coverage tool this is built on top of.
+ for the ideas. [JaCoCo](https://github.com/jacoco/jacoco) for the code coverage tool this is built on top of.
