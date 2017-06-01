@@ -109,7 +109,10 @@ class Fuzzer(corpusPath : String = "corpus",
           memoryClassLoader = newMemoryClassLoader
           targetClass = newTargetClass
         }
+
       }
+
+      val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
 
       if (!coverageSet.containsKey(hash)) {
         coverageSet.put(hash, obj)
@@ -119,9 +122,9 @@ class Fuzzer(corpusPath : String = "corpus",
           val newInput = Corpus.mutate(old, rand)
           workQueue.put(newInput)
         }
-        stats.addRun(success = result, newPath = true, totalTime)
+        stats.addRun(success = result, timeout = wasTimeout, newPath = true, totalTime)
       } else {
-        stats.addRun(success = result, newPath = false, totalTime)
+        stats.addRun(success = result, timeout = wasTimeout, newPath = false, totalTime)
       }
     }
 
