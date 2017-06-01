@@ -11,15 +11,20 @@ class Stats {
 
   private val runs  = new AtomicLong(0)
   private val fails = new AtomicLong(0)
+  private val timeouts = new AtomicLong(0)
   private val paths = new AtomicInteger(0)
   private val totalTime = new AtomicLong(0)
   private val minTime = new AtomicLong(Long.MaxValue)
   private val maxTime = new AtomicLong(Long.MinValue)
 
-  def addRun(success : Boolean, newPath : Boolean, time : Long): Unit = {
+  def addRun(success : Boolean, timeout: Boolean, newPath : Boolean, time : Long): Unit = {
     runs.incrementAndGet()
     if (!success) {
-      fails.incrementAndGet()
+      if (timeout) {
+        timeouts.incrementAndGet()
+      } else {
+        fails.incrementAndGet()
+      }
     }
 
     if (newPath) {
@@ -54,11 +59,11 @@ class Stats {
     val tt = totalTime.get()
     val r = runs.get()
     val avg = if (r == 0) 0 else tt/r
-    CurrentStats(r, fails.get(), paths.get(), tt, avg, minTime.get(), maxTime.get())
+    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get())
   }
 
 }
 
-case class CurrentStats(runs : Long, fails : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long) {
-  override def toString: String = s"runs: $runs fails: $fails paths: $paths total time: $totalTime average time: $averageTime min time: $minTime max time: $maxTime"
+case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long) {
+  override def toString: String = s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $totalTime average time: $averageTime min time: $minTime max time: $maxTime"
 }

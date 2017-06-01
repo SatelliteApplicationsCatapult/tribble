@@ -70,7 +70,11 @@ object Corpus {
   def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], corpusPath : String, failedPath : String): Unit = {
 
     val md5 = MessageDigest.getInstance("MD5")
-    val filename = if(input == null) "null" else DatatypeConverter.printHexBinary(md5.digest(input))
+    val filename = if(!success) {
+      DatatypeConverter.printBase64Binary(md5.digest(ex.map(_.toString).getOrElse("").getBytes(StandardCharsets.UTF_8)))
+    } else {
+      DatatypeConverter.printHexBinary(md5.digest(input))
+    }
 
     if (!success) { // failed, record it in the crashers. But don't keep it for mutations.
       Corpus.saveArray(input, s"$failedPath/$filename.failed")
