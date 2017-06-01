@@ -71,7 +71,9 @@ object Corpus {
 
     val md5 = MessageDigest.getInstance("MD5")
     val filename = if(!success) {
-      DatatypeConverter.printBase64Binary(md5.digest(ex.map(_.toString).getOrElse("").getBytes(StandardCharsets.UTF_8)))
+      DatatypeConverter.printHexBinary(md5.digest(ex.map(_.toString).getOrElse("").getBytes(StandardCharsets.UTF_8)))
+    } else if (input == null) {
+      "null"
     } else {
       DatatypeConverter.printHexBinary(md5.digest(input))
     }
@@ -164,7 +166,7 @@ object Corpus {
           // the rng is really broken. (yes this is not in position 4 in case of the use of the XKCD rng.)
           mutateInPlace(input, rand)
         }
-      case 6 => // Replace bytes with random entried from list of known interesting values
+      case 6 => // Replace bytes with random entry from list of known interesting values
         val entry = interestingBytes(rand.nextInt(interestingBytes.length))
         input.update(index, entry)
         input
@@ -229,7 +231,10 @@ object Corpus {
     b('\n'),
     b('\t'),
     b(','),
-    b('*')
+    b('*'),
+    b('\''),
+    b('"'),
+    b('\\')
   )
 
   private lazy val interestingInts = List[Int](
