@@ -5,7 +5,7 @@
     <parent>
         <artifactId>tribble</artifactId>
         <groupId>org.catapult.sa</groupId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>tribble-core</artifactId>
-            <version>0.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -42,9 +42,9 @@
             </plugin>
 
             <plugin>
-                <groupId>org.catapult.sa</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>tribble-maven-plugin</artifactId>
-                <version>0.1-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <configuration>
                     <target>org.catapult.sa.testcase.TestCase</target>
                 </configuration>
