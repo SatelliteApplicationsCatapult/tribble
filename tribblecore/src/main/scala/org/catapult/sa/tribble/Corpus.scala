@@ -71,7 +71,10 @@ object Corpus {
 
     val md5 = MessageDigest.getInstance("MD5")
     val filename = if(!success) {
-      DatatypeConverter.printHexBinary(md5.digest(ex.map(_.toString).getOrElse("").getBytes(StandardCharsets.UTF_8)))
+      ex match {
+        case None => "NoStackTrace"
+        case Some(e) => createExceptionFileName(e)
+      }
     } else if (input == null) {
       "null"
     } else {
@@ -89,6 +92,12 @@ object Corpus {
     } else { // new and didn't fail so add it to our corpus
       Corpus.saveArray(input, s"$corpusPath/$filename.input")
     }
+  }
+
+  private def createExceptionFileName(t : Throwable) : String = {
+    val in = t.getStackTrace.map(_.toString).mkString("\n")
+    val md5 = MessageDigest.getInstance("MD5")
+    DatatypeConverter.printHexBinary(md5.digest(in.getBytes(StandardCharsets.UTF_8)))
   }
 
   def saveArray(input: Array[Byte], fileName: String): Unit = {

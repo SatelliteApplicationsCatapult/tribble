@@ -78,6 +78,10 @@ new code paths will be saved to the corpus directory with a file name that is an
 Try and avoid printing to stdout and stderr in your test cases this can slow things down quite a lot. There is a one second 
 time out on each test run. 
 
+When creating corpus entries you can append .hex to the file name and have the file hex encoded rather than raw bytes.
+ This can make it a lot easier to include non printing characters. Generated corpus entries and failed inputs will use 
+ this if it finds unprintable characters in an input array.
+
 ## Why?
 
 Because we needed one, you probably do too. If you don't think you do you don't have enough tests yet.
