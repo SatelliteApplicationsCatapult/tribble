@@ -11,12 +11,14 @@ object App extends Arguments {
   private val TIMEOUT = "timeout"
   private val CORPUS = "corpus"
   private val FAILED = "failed"
+  private val COUNT = "count"
 
   override def allowedArgs(): List[Argument] = List(
     Argument(CORPUS, "corpus"),
     Argument(FAILED, "failed"),
     Argument(THREAD_COUNT, "2"),
     Argument(TIMEOUT, "1000"),
+    Argument(COUNT, "-1"),
     Argument(TARGET_CLASS)
   )
 
@@ -36,6 +38,11 @@ object App extends Arguments {
 
     if (!StringUtils.isNumeric(arguments.getOrElse(TIMEOUT, ""))) {
       println("ERROR: timeout must be numeric")
+      return
+    }
+
+    if (!StringUtils.isNumeric(arguments.getOrElse(COUNT, ""))) {
+      println("ERROR: count must be numeric")
       return
     }
 

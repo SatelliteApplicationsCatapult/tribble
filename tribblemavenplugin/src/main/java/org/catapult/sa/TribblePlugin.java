@@ -38,6 +38,9 @@ public class TribblePlugin extends AbstractMojo {
     @Parameter(property = "fuzztest.timeout", required = true, defaultValue = "1000")
     public long timeout;
 
+    @Parameter(property = "fuzztest.count", required = true, defaultValue = "-1")
+    public long count;
+
 
     @Parameter( defaultValue="${project}", required = true, readonly = true)
     public MavenProject project;
@@ -69,7 +72,7 @@ public class TribblePlugin extends AbstractMojo {
 
             Thread.currentThread().setContextClassLoader(projectRealm);
 
-            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, threads, timeout);
+            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, threads, timeout, count);
             fuzzer.run(target, projectRealm);
 
         } catch (DuplicateRealmException | MalformedURLException e) {
