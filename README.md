@@ -112,27 +112,17 @@ when I started this.
 "Letting engineers name things is like letting the marketing department build them" 
 
 ## "Advanced" settings
-There are some extra settings you may wish to use if needed. They are accessable either from the maven plugin or the 
+There are some extra settings you may wish to use if needed. They are accessible either from the maven plugin or the 
 command line.
 
-### Maven
-| Tag |  Description | Default |
-| --- | --- | --- |
-| target | Fully qualified class name of a class which implements `org.catapult.sa.tribble.FuzzTest` | |
-| corpusPath | Path to the corpus folder | corpus |
-| failedPath | Path to the failed folder | failed |
-| threads | Number of threads to use | 2 |
-| timeout | Time out for an individual test run in milliseconds | 1000 |
-
-### Command Line
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| --targetClass | Fully qualified class name of a class which implements `org.catapult.sa.tribble.FuzzTest` | |
-| --corpus | Path to the corpus folder | corpus |
-| --failed | Path to the failed folder | failed |
-| --threads | Number of threads to use | 2 |
-| --timeout | Time out for an individual test run in milliseconds | 1000 |
+|Tag | Parameter | Description | Default |
+| --- | --- | --- | --- |
+| target | --targetClass | Fully qualified class name of a class which implements `org.catapult.sa.tribble.FuzzTest` | |
+| corpusPath | --corpus | Path to the corpus folder | corpus |
+| failedPath | --failed | Path to the failed folder | failed |
+| threads | --threads | Number of threads to use | 2 |
+| timeout | --timeout | Time out for an individual test run in milliseconds | 1000 |
+| count | --count | number of iterations to run. Number greater than zero for a limit | -1 |
 
 ## Where next?
 

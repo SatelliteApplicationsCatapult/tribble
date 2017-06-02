@@ -129,7 +129,7 @@ object Corpus {
 
   def mutate(input: Array[Byte], rand: Random): Array[Byte] = {
     // TODO: an empty array is valid
-    if (input.isEmpty) {
+    if (input == null || input.isEmpty) {
       Array[Byte](0x00) // if we started with empty input make a single byte we can mutate more next time.
     } else { // todo : Many more mutation ideas
       rand.nextInt(100) match { // Make extending the array much less likely than changing existing values

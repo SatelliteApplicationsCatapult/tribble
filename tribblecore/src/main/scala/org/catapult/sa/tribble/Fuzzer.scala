@@ -1,6 +1,7 @@
 package org.catapult.sa.tribble
 
 import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicLong
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -14,11 +15,18 @@ import scala.util.Random
 class Fuzzer(corpusPath : String = "corpus",
              failedPath : String = "failed",
              threadCount : Int = 2,
-             timeout : Long = 1000L) {
+             timeout : Long = 1000L,
+             iterationCount : Long = -1) {
 
   val rand = new Random()
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
   rand.setSeed(System.currentTimeMillis())
+
+  private val countDown = if (iterationCount > 0)  {
+    new AtomicLong(iterationCount)
+  } else {
+    null
+  }
 
   def run(targetName : String, cl : ClassLoader) : Unit = {
     val coverageSet = new ConcurrentHashMap[String, Object]()
@@ -75,7 +83,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
-    while(true) {
+    while(countDown == null || countDown.getAndDecrement() > 0) {
 
       if (workQueue.isEmpty) {
         Corpus.readCorpusInputStack(corpusPath, workQueue)
