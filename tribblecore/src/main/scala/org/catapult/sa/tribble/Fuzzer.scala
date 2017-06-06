@@ -83,6 +83,9 @@ class Fuzzer(corpusPath : String = "corpus",
 
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
+
+    val mutator = new BasicMutationEngine(rand)
+
     while(countDown == null || countDown.getAndDecrement() > 0) {
 
       if (workQueue.isEmpty) {
@@ -93,7 +96,7 @@ class Fuzzer(corpusPath : String = "corpus",
           val drain = new java.util.ArrayList[Array[Byte]]()
           workQueue.drainTo(drain)
           // mutate lots of times and try again
-          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => Corpus.mutate(a, rand))).asJavaCollection)
+          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => mutator.mutate(a))).asJavaCollection)
         }
         pathCountLastLoad = coverageSet.size()
 
@@ -128,7 +131,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
         if (result) {
           Corpus.saveResult(old, result, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
-          val newInput = Corpus.mutate(old, rand)
+          val newInput = mutator.mutate(old)
           workQueue.put(newInput)
         }
         stats.addRun(success = result, timeout = wasTimeout, newPath = true, totalTime)

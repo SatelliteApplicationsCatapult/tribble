@@ -12,12 +12,13 @@ import scala.util.Random
   * This is a little bit evil. The other option is to set the seed value for a random number generator to give the paths
   * we need. I'm not sure I like that any more.
   */
-class TestCorpus {
+class TestBasicMutationEngine {
 
   @Test
   def checkEmptyInput() : Unit = {
     val rand = mock(classOf[Random])
-    val result = Corpus.mutate(Array.emptyByteArray, rand)
+    val corpus = new BasicMutationEngine(rand)
+    val result = corpus.mutate(Array.emptyByteArray)
 
     assertArrayEquals(Array[Byte](0x00), result)
   }
@@ -29,9 +30,10 @@ class TestCorpus {
     when(rand.nextInt(1)).thenReturn(0)
     when(rand.nextInt(10)).thenReturn(0)
 
+    val corpus = new BasicMutationEngine(rand)
 
     val input = Array[Byte](0x00)
-    val result = Corpus.mutate(input, rand)
+    val result = corpus.mutate(input)
 
     assertArrayEquals(Array[Byte](0x01), result)
   }
