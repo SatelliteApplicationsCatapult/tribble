@@ -50,10 +50,13 @@ object App extends Arguments {
       return
     }
 
-    val fuzzer = new Fuzzer(arguments(CORPUS),
+    val fuzzer = new Fuzzer(
+      arguments(CORPUS),
       arguments(FAILED),
-      arguments.getOrElse(THREAD_COUNT, "2").toInt,
-      arguments.getOrElse(TIMEOUT, "1000").toLong)
+      arguments(THREAD_COUNT).toInt,
+      arguments(TIMEOUT).toLong,
+      arguments(COUNT).toLong
+    )
 
     fuzzer.run(arguments(TARGET_CLASS), getClass.getClassLoader)
   }
