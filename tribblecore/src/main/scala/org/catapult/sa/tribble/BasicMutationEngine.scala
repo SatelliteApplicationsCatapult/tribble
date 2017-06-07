@@ -16,13 +16,16 @@ class BasicMutationEngine(rand: Random) extends MutationEngine {
     } else { // todo : Many more mutation ideas
       rand.nextInt(100) match { // Make extending the array much less likely than changing existing values
         case 0 => extendArray(input, rand)
-        case 1 => doubleUpArray(input, rand)
+        case 1 => Array.concat(input, input)
         case 2 => extendArray(input, rand, 100) // big extend
         case 3 => if (input.length > 4) {
           trim(input, rand)
         } else {
           mutate(input) // try again.
         }
+        case 4 =>
+          val newPrefix = byteMarkers(rand.nextInt(byteMarkers.length))
+          Array.concat(newPrefix, input)
         case _ => mutateInPlace(input)
       }
     }
@@ -86,6 +89,9 @@ class BasicMutationEngine(rand: Random) extends MutationEngine {
         } else { // Too close to the end so try something else.
           mutateInPlace(input) // try again.
         }
+      case 10 => // replace the first byte with a random number.
+        input.update(0, b(index))
+        input
       case _ => // default change a byte at random
         println("Unknown mutation option.")
         changeOneByte(input, rand)
@@ -114,17 +120,7 @@ object BasicMutationEngine {
   def extendArray(input: Array[Byte], rand: Random, length: Int = 10): Array[Byte] = {
     val extra = new Array[Byte](rand.nextInt(length))
     rand.nextBytes(extra)
-    val result = new Array[Byte](input.length + extra.length)
-    input.copyToArray(result, 0)
-    extra.copyToArray(extra, input.length)
-    result
-  }
-
-  def doubleUpArray(input: Array[Byte], rand: Random): Array[Byte] = {
-    val result = new Array[Byte](input.length * 2)
-    input.copyToArray(result, 0)
-    input.copyToArray(result, input.length)
-    result
+    Array.concat(input, extra)
   }
 
   val interestingBytes : List[Byte] = List[Byte](
@@ -179,6 +175,15 @@ object BasicMutationEngine {
     512,
     1024,
     2048
+  )
+
+  val byteMarkers : List[Array[Byte]] = List[Array[Byte]] (
+    Array(b(0x00), b(0x00), b(0x00), b(0x0C), b(0x6A), b(0x50), b(0x20), b(0x20), b(0x0D), b(0x0A)), // jpeg2000
+    Array(b(0x00), b(0x00), b(0x00), b(0x18), b(0x66), b(0x74), b(0x79), b(0x70), b(0x33), b(0x67), b(0x70), b(0x35)), // MOV
+    Array(b(0x00), b(0x00), b(0x01)), // ICO (Not including the half byte B)
+    Array(b(0x00), b(0x01), b(0x00), b(0x00), b(0x00)), // True Type font.
+    Array(b(0x01), b(0xFF), b(0x02), b(0x04), b(0x03), b(0x02))  // DRW
+    // TODO: add many many more of these.
   )
 
   // Short cut to convert to byte.
