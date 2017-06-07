@@ -3,6 +3,11 @@
 Any contributions no matter how small are always welcome. We welcome every thing from bug reports, typo corrections in 
 documentation to new features or translations. 
 
+## Short version
+Github fork, branch, and pull requests. Github issues. Travis CI. Bintray JCenter releases.
+
+If you didn't understand that; fantastic! We really want your help, read on to find out how.
+
 ## Getting started
 
 ### You will need: 
@@ -24,7 +29,7 @@ trivial may help tracking down whats going on in your case.
 
 ## Making a documentation change
 
-Open the file on Github. Eg the readme.md. file in the corner there should be a little pen icon. This will open up a 
+Open the file on Github. Eg the readme.md file. In the corner there should be a little pen icon. This will open up a 
 pretty good text editor. See the [help](https://help.github.com/categories/writing-on-github/) for more details. When 
 you are done with your changes there is a place to leave a message about what you have changed, finally click the commit 
 changes button. 

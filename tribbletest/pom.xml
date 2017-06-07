@@ -52,5 +52,14 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>bintray-wselwood-Tribble</id>
+            <name>wselwood-Tribble</name>
+            <url>https://api.bintray.com/maven/wselwood/Tribble/tribble-test/;publish=1</url>
+        </repository>
+    </distributionManagement>
+
+
 
 </project>
