@@ -1,0 +1,80 @@
+group rootProject.group
+version rootProject.version
+
+apply plugin : 'java'
+apply plugin : 'maven'
+
+ext.mavenVersion = '3.3.9'
+ext.mavenPath = 'C:\\lib\\apache-maven-3.3.9\\bin\\mvn.cmd'
+
+sourceCompatibility = 1.8
+repositories {
+    jcenter()
+}
+
+
+dependencies {
+    compile "org.apache.maven:maven-core:$mavenVersion"
+    compile "org.apache.maven:maven-plugin-api:$mavenVersion"
+    compile "org.apache.maven.plugin-tools:maven-plugin-annotations:3.4"
+
+    compile project(':tribble-core')
+}
+
+// to create the maven plugin we need to create a pom first and then use that
+// to run the mvn tool to generate the plugin xml files. Which we can then use
+// in the jar and end up with a working plugin.
+task createPom() {
+    doLast {
+        def pd = project.projectDir.absolutePath
+        def bd = project.buildDir.absolutePath
+        install.repositories.mavenInstaller.pom = pom {
+            project {
+                groupId project.group
+                artifactId project.name
+                version project.version
+                packaging 'maven-plugin'
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+            }
+        }.withXml {
+            asNode().appendNode('build')
+                    .with {
+                appendNode('directory', pd)
+                appendNode('outputDirectory', bd + "/classes/main")
+            }
+        }
+
+        println("project path: ${project.projectDir.absolutePath}")
+        println("build path: ${project.buildDir.absolutePath}")
+
+        install.repositories.mavenInstaller.pom.writeTo("${project.buildDir.absolutePath}/pom.xml")
+    }
+}
+
+task pluginDescriptor( type: Exec ) {
+    dependsOn 'createPom', 'compileJava'
+
+    environment("JAVA_HOME", "${System.properties.'java.home'}")
+
+    commandLine mavenPath, '-e', '-B', '--file', "${buildDir.canonicalPath}/pom.xml", 'org.apache.maven.plugins:maven-plugin-plugin:3.3:descriptor'
+    doFirst {
+        final File pom = project.file("${buildDir.canonicalPath}/pom.xml")
+
+        assert pom.file, "[$pom.canonicalPath] was not created"
+    }
+    doLast {
+        final  pluginDescriptor = new File(( File ) project.compileJava.destinationDir, 'META-INF/maven/plugin.xml' )
+        assert pluginDescriptor.file, "[$pluginDescriptor.canonicalPath] was not created"
+        println "Plugin descriptor file:$pluginDescriptor.canonicalPath is created successfully"
+    }
+}
+
+jar.dependsOn 'pluginDescriptor'
