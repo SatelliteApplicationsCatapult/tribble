@@ -1,0 +1,6 @@
+
+include('tribble-core')
+include('tribble-maven-plugin')
+include('tribble-gradle-plugin')
+
+include('tribble-test')

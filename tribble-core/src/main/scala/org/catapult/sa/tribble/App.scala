@@ -41,10 +41,11 @@ object App extends Arguments {
       return
     }
 
-    if (!StringUtils.isNumeric(arguments.getOrElse(COUNT, ""))) {
-      println("ERROR: count must be numeric")
+    // TODO: fix -numbers
+    /*if (!StringUtils.isNumeric(arguments.getOrElse(COUNT, "")) ) {
+      println("ERROR: count must be numeric (" + arguments.getOrElse(COUNT, "") + ")")
       return
-    }
+    }*/
 
     if (! Corpus.validateDirectories(arguments(CORPUS), arguments(FAILED))) {
       return

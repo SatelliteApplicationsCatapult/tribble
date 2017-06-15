@@ -1,0 +1,15 @@
+group rootProject.group
+version rootProject.version
+
+apply plugin : 'scala'
+apply plugin : 'maven'
+
+sourceCompatibility = 1.8
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile "org.scala-lang:scala-library:${rootProject.ext.scalaVersion}"
+    compile project(':tribble-core')
+}

@@ -1,0 +1,4 @@
+group 'org.catapult.sa'
+version '0.4-SNAPSHOT'
+
+ext.scalaVersion = '2.12.1'
