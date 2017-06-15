@@ -64,7 +64,7 @@ task createPom() {
 }
 
 task pluginDescriptor( type: Exec ) {
-    dependsOn 'createPom', 'compileJava'
+    dependsOn 'createPom', 'compileJava', ':tribble-core:install' // needs to be able to find tribble-core from inside maven
 
     environment("JAVA_HOME", "${System.properties.'java.home'}")
 
