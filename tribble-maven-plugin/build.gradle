@@ -5,7 +5,11 @@ apply plugin : 'java'
 apply plugin : 'maven'
 
 ext.mavenVersion = '3.3.9'
-ext.mavenPath = 'C:\\lib\\apache-maven-3.3.9\\bin\\mvn.cmd'
+if (System.properties['mvnpath']) {
+    ext.mavenPath = System.properties['mvnpath'].toString()
+} else {
+    ext.mavenPath = 'mvn'
+}
 
 sourceCompatibility = 1.8
 repositories {
