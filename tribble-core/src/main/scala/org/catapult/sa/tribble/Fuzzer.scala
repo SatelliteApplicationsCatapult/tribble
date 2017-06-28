@@ -1,9 +1,11 @@
 package org.catapult.sa.tribble
 
+import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
 import scala.collection.JavaConverters._
+import scala.collection.convert.WrapAsScala.asScalaBuffer
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.util.Random
@@ -38,15 +40,19 @@ class Fuzzer(corpusPath : String = "corpus",
     Corpus.readCorpusInputStack(corpusPath, workStack)
 
 
-    val pool: ExecutorService = Executors.newFixedThreadPool(threadCount, (r: Runnable) => {
-      val result = new Thread(r)
-      result.setContextClassLoader(cl)
-      result
+    val pool: ExecutorService = Executors.newFixedThreadPool(threadCount, new ThreadFactory {
+      override def newThread(r: Runnable): Thread = {
+        val result = new Thread(r)
+        result.setContextClassLoader(cl)
+        result
+      }
     })
 
-    Thread.setDefaultUncaughtExceptionHandler((t, e) => {
-      System.err.println("Exception thrown in thread " + t.getName)
-      e.printStackTrace(System.err)
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler {
+      override def uncaughtException(t: Thread, e: Throwable): Unit = {
+        System.err.println("Exception thrown in thread " + t.getName)
+        e.printStackTrace(System.err)
+      }
     })
 
     val futures = (0 to 2).map( _ => {
@@ -74,9 +80,11 @@ class Fuzzer(corpusPath : String = "corpus",
                        workQueue : BlockingQueue[Array[Byte]],
                        stats : Stats): Unit = {
 
-    Thread.currentThread().setUncaughtExceptionHandler((t, e) => {
-      System.err.println("Exception thrown in thread " + t.getName)
-      e.printStackTrace(System.err)
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler {
+      override def uncaughtException(t: Thread, e: Throwable): Unit = {
+        System.err.println("Exception thrown in thread " + t.getName)
+        e.printStackTrace(System.err)
+      }
     })
 
     var (memoryClassLoader, targetClass) = createClassLoader(targetName)
@@ -96,6 +104,7 @@ class Fuzzer(corpusPath : String = "corpus",
           val drain = new java.util.ArrayList[Array[Byte]]()
           workQueue.drainTo(drain)
           // mutate lots of times and try again
+          // Note: asScalaBuffer is deprecated in scala 2.12 however for now we need to support 2.11 which doesn't have the same class.
           workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => mutator.mutate(a))).asJavaCollection)
         }
         pathCountLastLoad = coverageSet.size()
