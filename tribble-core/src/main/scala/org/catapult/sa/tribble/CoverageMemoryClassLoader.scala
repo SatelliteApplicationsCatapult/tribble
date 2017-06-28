@@ -106,7 +106,6 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
     classes.foreach( c => {
       coverageMap.get(c) match {
         case Some(cc) =>
-
           (cc.getFirstLine to cc.getLastLine).foreach(i => {
             val status = convertCover(cc.getLine(i).getStatus)
             //printf("%s:%d : %s\n", cc.getName, i, status)

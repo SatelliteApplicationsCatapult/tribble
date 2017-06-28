@@ -1,8 +1,19 @@
 group rootProject.group
 version rootProject.version
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
 apply plugin : 'scala'
 apply plugin : 'maven'
+apply plugin : 'maven-publish'
+apply plugin : 'com.jfrog.bintray'
 
 sourceCompatibility = 1.8
 repositories {
@@ -34,4 +45,34 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ?: System.getenv('BINTRAY_USER') ?: System.getProperty("BINTRAY_USER")
+    key = project.hasProperty('bintrayApiKey') ?: System.getenv('BINTRAY_KEY') ?: System.getProperty("BINTRAY_KEY")
+    pkg {
+        repo = 'Tribble'
+        name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/SatelliteApplicationsCatapult/tribble.git'
+        publications = ['tribbleCorePub']
+        version {
+            name = project.version
+            released  = new Date()
+            vcsTag = 'v' + project.version
+        }
+    }
+}
+
+publishing {
+    publications {
+        tribbleCorePub(MavenPublication) {
+            artifact jar
+            artifact sourcesJar
+            artifact javadocJar
+            groupId project.group
+            artifactId project.name
+            version project.version
+        }
+    }
 }

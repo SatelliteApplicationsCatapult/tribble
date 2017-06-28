@@ -2,9 +2,10 @@ package org.catapult.sa.tribble
 
 import java.io.{File, FileInputStream, FileOutputStream, PrintStream}
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.security.MessageDigest
 import java.util.concurrent.BlockingQueue
+import java.util.function.Consumer
 import javax.xml.bind.DatatypeConverter
 
 import org.apache.commons.io.IOUtils
@@ -51,7 +52,7 @@ object Corpus {
   def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[Array[Byte]]): Unit = {
     lock.synchronized {
       if (stack.isEmpty) { // don't write it twice.
-        Files.newDirectoryStream(Paths.get(corpusPath)).forEach { f =>
+        Files.newDirectoryStream(Paths.get(corpusPath)).forEach (((f : Path) => {
           val stream = new FileInputStream(f.toFile)
           if (f.getFileName.endsWith(".hex")) {
             val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
@@ -61,7 +62,8 @@ object Corpus {
           }
           IOUtils.closeQuietly(stream)
         }
-      }
+      ).asInstanceOf[Consumer[Path]])
+    }
     }
   }
 
