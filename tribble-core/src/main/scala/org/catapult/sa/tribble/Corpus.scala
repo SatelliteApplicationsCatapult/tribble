@@ -5,10 +5,11 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 import java.security.MessageDigest
 import java.util.concurrent.BlockingQueue
-import java.util.function.Consumer
 import javax.xml.bind.DatatypeConverter
 
 import org.apache.commons.io.IOUtils
+
+import scala.collection.JavaConverters._
 
 /**
   * Functions for dealing with the corpus of inputs and mutating them.
@@ -52,7 +53,7 @@ object Corpus {
   def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[Array[Byte]]): Unit = {
     lock.synchronized {
       if (stack.isEmpty) { // don't write it twice.
-        Files.newDirectoryStream(Paths.get(corpusPath)).forEach (((f : Path) => {
+        Files.newDirectoryStream(Paths.get(corpusPath)).asScala.foreach((f : Path) => {
           val stream = new FileInputStream(f.toFile)
           if (f.getFileName.endsWith(".hex")) {
             val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
@@ -61,9 +62,8 @@ object Corpus {
             stack.put(IOUtils.toByteArray(stream))
           }
           IOUtils.closeQuietly(stream)
-        }
-      ).asInstanceOf[Consumer[Path]])
-    }
+        })
+      }
     }
   }
 

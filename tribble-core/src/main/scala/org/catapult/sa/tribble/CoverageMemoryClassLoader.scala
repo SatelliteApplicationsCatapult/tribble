@@ -64,7 +64,7 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
     } else {
       // we cant override the stuff in java. So don't try to instrument
       // Strange things happen if we try and instrument our selves. Don't
-      if (!ignores.exists(name.startsWith)) {
+      if (shouldTryLoading(name)) {
         val instrumented = addClass(name)
         val result = defineClass(name, instrumented, 0, instrumented.length)
         definitionClasses.put(name, result)
@@ -72,6 +72,14 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
       } else {
         super.loadClass(name, resolve)
       }
+    }
+  }
+
+  private def shouldTryLoading(name : String) : Boolean = {
+    if (name.contains(".")) { // possibly a full path check our list of ignores
+      !ignores.exists(name.startsWith)
+    } else { // not a full path if might be something like String so we should not try and load.
+      false
     }
   }
 
