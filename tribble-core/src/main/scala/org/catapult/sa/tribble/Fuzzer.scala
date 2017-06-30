@@ -4,6 +4,8 @@ import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
+import org.apache.commons.lang.StringUtils
+
 import scala.collection.JavaConverters._
 import scala.collection.convert.WrapAsScala.asScalaBuffer
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -16,6 +18,7 @@ import scala.util.Random
   */
 class Fuzzer(corpusPath : String = "corpus",
              failedPath : String = "failed",
+             ignoreClasses : Array[String] = Array(),
              threadCount : Int = 2,
              timeout : Long = 1000L,
              iterationCount : Long = -1) {
@@ -183,7 +186,9 @@ class Fuzzer(corpusPath : String = "corpus",
   private def createClassLoader[T <: FuzzTest](targetName : String) : (CoverageMemoryClassLoader, Class[T]) = {
     val memoryClassLoader = new CoverageMemoryClassLoader(Thread.currentThread().getContextClassLoader)
 
+    ignoreClasses.filter(StringUtils.isNotBlank).foreach(memoryClassLoader.addFilter)
     memoryClassLoader.addClass(targetName)
+
     val targetClass = memoryClassLoader.loadClass(targetName).asInstanceOf[Class[T]]
 
     Thread.currentThread().setContextClassLoader(memoryClassLoader)

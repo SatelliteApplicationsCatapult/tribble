@@ -12,6 +12,8 @@ object App extends Arguments {
   private val CORPUS = "corpus"
   private val FAILED = "failed"
   private val COUNT = "count"
+  private val IGNORECLASSES = "ignore"
+
 
   override def allowedArgs(): List[Argument] = List(
     Argument(CORPUS, "corpus"),
@@ -19,7 +21,8 @@ object App extends Arguments {
     Argument(THREAD_COUNT, "2"),
     Argument(TIMEOUT, "1000"),
     Argument(COUNT, "-1"),
-    Argument(TARGET_CLASS)
+    Argument(TARGET_CLASS),
+    Argument(IGNORECLASSES)
   )
 
   def main(args : Array[String]) : Unit = {
@@ -54,6 +57,7 @@ object App extends Arguments {
     val fuzzer = new Fuzzer(
       arguments(CORPUS),
       arguments(FAILED),
+      arguments(IGNORECLASSES).split(","),
       arguments(THREAD_COUNT).toInt,
       arguments(TIMEOUT).toLong,
       arguments(COUNT).toLong
