@@ -134,27 +134,27 @@ class Fuzzer(corpusPath : String = "corpus",
 
       val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
 
-      if (!result) {
-        Corpus.saveResult(old, result, ex, corpusPath, failedPath)
+      if (result == FuzzResult.FAILED) {
+        Corpus.saveResult(old, false, ex, corpusPath, failedPath)
       }
 
-      if (!coverageSet.containsKey(hash)) {
+      if (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING) {
         coverageSet.put(hash, obj)
 
-        if (result) {
-          Corpus.saveResult(old, result, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
+        if (FuzzResult.Passed(result)) {
+          Corpus.saveResult(old, true, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
           val newInput = mutator.mutate(old)
           workQueue.put(newInput)
         }
-        stats.addRun(success = result, timeout = wasTimeout, newPath = true, totalTime)
+        stats.addRun(success = FuzzResult.Passed(result) , timeout = wasTimeout, newPath = true, totalTime)
       } else {
-        stats.addRun(success = result, timeout = wasTimeout, newPath = false, totalTime)
+        stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = false, totalTime)
       }
     }
 
   }
 
-  private def runOnce(targetClass : Class[_ <: FuzzTest], input : Array[Byte], memoryClassLoader : CoverageMemoryClassLoader) : (Boolean, String, Option[Throwable]) = {
+  private def runOnce(targetClass : Class[_ <: FuzzTest], input : Array[Byte], memoryClassLoader : CoverageMemoryClassLoader) : (FuzzResult, String, Option[Throwable]) = {
 
     // Here we execute our test target class through its interface
     memoryClassLoader.reset()
@@ -172,14 +172,14 @@ class Fuzzer(corpusPath : String = "corpus",
           case e: OutOfMemoryError => // Out of memory. Clean up what we can and force a GC before handing back up the stack
             targetInstance = null
             System.gc()
-            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+            (FuzzResult.FAILED, memoryClassLoader.generateCoverageHash(), Some(e))
           case e: Throwable =>
-            (false, memoryClassLoader.generateCoverageHash(), Some(e))
+            (FuzzResult.FAILED, memoryClassLoader.generateCoverageHash(), Some(e))
         }
 
       }, Duration(timeout, TimeUnit.MILLISECONDS))
     } catch {
-      case e : TimeoutException => (false, memoryClassLoader.generateCoverageHash(), Some(e))
+      case e : TimeoutException => (FuzzResult.FAILED, memoryClassLoader.generateCoverageHash(), Some(e))
     }
   }
 
