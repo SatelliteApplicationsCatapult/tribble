@@ -65,5 +65,31 @@ class Stats {
 }
 
 case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long) {
-  override def toString: String = s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $totalTime average time: $averageTime min time: $minTime max time: $maxTime"
+  override def toString: String = {
+    val t = CurrentStats.formatDuration(totalTime)
+    val a = CurrentStats.formatDuration(averageTime)
+    val min = if (minTime == Long.MaxValue) "~" else CurrentStats.formatDuration(minTime)
+    val max = if (maxTime == Long.MinValue) "~" else CurrentStats.formatDuration(maxTime)
+    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max"
+  }
+
+
+}
+
+object CurrentStats {
+  // Java8 Time doesn't have a duration formatter. Blah
+  def formatDuration(d : Long) : String = {
+    if (d == 0) {
+      "0S"
+    } else {
+      val abs = Math.abs(d)
+      val seconds = abs / 1000
+      val millis = abs - (seconds * 1000)
+
+      ((if (seconds/3600 > 0) (seconds/3600) + "H " else "") +
+        (if ((seconds%3600)/60 > 0) (seconds%3600)/60 + "M " else "") +
+        (if (seconds%60 > 0) (seconds%60) + "S " else "") +
+        (if (millis > 0) millis + "s" else "")).trim
+    }
+  }
 }
