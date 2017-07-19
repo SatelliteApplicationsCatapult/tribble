@@ -4,7 +4,7 @@ Any contributions no matter how small are always welcome. We welcome every thing
 documentation to new features or translations. 
 
 ## Short version
-Github fork, branch, and pull requests. Github issues. Travis CI. Bintray JCenter releases.
+Gradle build. Github fork, branch, and pull requests. Github issues. Travis CI. Bintray JCenter releases.
 
 If you didn't understand that; fantastic! We really want your help, read on to find out how.
 
@@ -50,3 +50,9 @@ When your ready:
 * Create a pull request.
 
 We will then review the changes and get back to you with any questions, or hopefully just approve it.
+
+## Building for different scala versions
+
+If you need a version of this library with a different scala dependency. You should only need to change the 
+`ext.scalaVersion` value in the `build.gradle` file and rebuild. Note we support as a base 2.11.7 so something will show
+ deprecated warnings in 2.12. Please make sure any changes to the code build against 2.11.7. 
