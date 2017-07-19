@@ -124,7 +124,7 @@ command line.
 | timeout | --timeout | Time out for an individual test run in milliseconds | 1000 |
 | count | --count | number of iterations to run. Number greater than zero for a limit | -1 |
 | ignoreClasses | | List of class prefixes e.g `org.apache.hadoop.` to ignore from coverage. This is useful if you find some classes are already loaded. | |
-| | --ignoreClasses | Comma Seperated list of class prefixes to ignore.  e.g `org.apache.hadoop.` 
+| | --ignoreClasses | Comma Seperated list of class prefixes to ignore.  e.g `org.apache.hadoop.` | |
 
 ## Where next?
 
@@ -137,6 +137,12 @@ command line.
 ## Contributing 
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_OF_CONDUCT.md)
+
+## Contributors
+
+* [Wil Selwood](https://github.com/wselwood)
+* [Cameron Shiell](https://github.com/amanshu)
+* [Chen Chenglong](https://github.com/ccl0326)
 
 ## Thanks
 
