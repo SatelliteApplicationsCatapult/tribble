@@ -17,7 +17,6 @@ If you are planning to make code changes you will also need:
 
 * A [Git client](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on your machine
 * The [JDK](https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html) installed 
-* [Maven](https://maven.apache.org/install.html) installed
 * Clone the repo `git clone git@github.com:SatelliteApplicationsCatapult/tribble.git`
  
 ## Reporting a bug:
@@ -44,7 +43,7 @@ working on and don't duplicate effort.
 
 When your ready:
 * Fork the repo to your own user
-* Check that the change builds
+* Check that the change builds ( `./gradlew build` )
 * Check there are some tests (Yes there are not many so far but we don't want the test debt to get worse)
 * Check the code style is consistent (Do not change the indenting because your editor decided to)
 * Check the file permissions haven't changed. (Cygwin and windows can be evil for this)
