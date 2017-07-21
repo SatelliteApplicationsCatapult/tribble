@@ -55,24 +55,6 @@ class Trim extends Mutator {
   }
 }
 
-class Prefix extends Mutator {
-  override def mutate(in: Array[Byte], rand: Random): Array[Byte] = {
-    val newPrefix = Prefix.byteMarkers(rand.nextInt(Prefix.byteMarkers.length))
-    Array.concat(newPrefix, in)
-  }
-}
-
-object Prefix {
-  val byteMarkers : List[Array[Byte]] = List[Array[Byte]] (
-    Array(b(0x00), b(0x00), b(0x00), b(0x0C), b(0x6A), b(0x50), b(0x20), b(0x20), b(0x0D), b(0x0A)), // jpeg2000
-    Array(b(0x00), b(0x00), b(0x00), b(0x18), b(0x66), b(0x74), b(0x79), b(0x70), b(0x33), b(0x67), b(0x70), b(0x35)), // MOV
-    Array(b(0x00), b(0x00), b(0x01)), // ICO (Not including the half byte B)
-    Array(b(0x00), b(0x01), b(0x00), b(0x00), b(0x00)), // True Type font.
-    Array(b(0x01), b(0xFF), b(0x02), b(0x04), b(0x03), b(0x02))  // DRW
-    // TODO: add many many more of these.
-  )
-}
-
 class AddOne extends Mutator {
   override def mutate(in: Array[Byte], rand: Random): Array[Byte] = {
     val index = rand.nextInt(in.length)
