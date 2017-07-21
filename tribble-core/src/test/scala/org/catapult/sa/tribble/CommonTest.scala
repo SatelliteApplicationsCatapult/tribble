@@ -7,7 +7,7 @@ import scala.util.Random
 /**
   * Simple utility methods to make tests easier.
   */
-object TestUtils {
+object CommonTest {
   def a(a : Int *) : Array[Byte] = a.map(_.asInstanceOf[Byte]).toArray
 
   def rand(r : (Int, Int) *) : Random = {

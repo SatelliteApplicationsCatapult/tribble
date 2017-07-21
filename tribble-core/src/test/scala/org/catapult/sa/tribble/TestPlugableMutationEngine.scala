@@ -1,6 +1,6 @@
 package org.catapult.sa.tribble
 
-import org.catapult.sa.tribble.TestUtils._
+import org.catapult.sa.tribble.CommonTest._
 
 import org.junit.Assert._
 import org.junit.Test
