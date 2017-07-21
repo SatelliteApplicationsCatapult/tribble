@@ -95,7 +95,7 @@ class Fuzzer(corpusPath : String = "corpus",
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
 
-    val mutator = new BasicMutationEngine(rand)
+    val mutator = new PlugableMutationEngine(rand)
 
     while(countDown == null || countDown.getAndDecrement() > 0) {
 

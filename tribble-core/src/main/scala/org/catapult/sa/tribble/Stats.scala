@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 /**
   * Keep track of the stats. Number of runs, number of crashes etc
   *
-  * Later this should be used for displaying a running log as the program is running.
+  * This is used for displaying a running log as the program is running.
   */
 class Stats {
 
@@ -72,8 +72,6 @@ case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int,
     val max = if (maxTime == Long.MinValue) "~" else CurrentStats.formatDuration(maxTime)
     s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max"
   }
-
-
 }
 
 object CurrentStats {
@@ -89,7 +87,7 @@ object CurrentStats {
       ((if (seconds/3600 > 0) (seconds/3600) + "H " else "") +
         (if ((seconds%3600)/60 > 0) (seconds%3600)/60 + "M " else "") +
         (if (seconds%60 > 0) (seconds%60) + "S " else "") +
-        (if (millis > 0) millis + "s" else "")).trim
+        (if (millis > 0) millis + "ms" else "")).trim
     }
   }
 }
