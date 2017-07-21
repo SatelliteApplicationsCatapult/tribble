@@ -5,7 +5,10 @@ import org.catapult.sa.tribble.CommonBytes._
 import scala.util.Random
 
 /**
-  * Mutator that adds known file type prefixes on to the 
+  * Mutator that adds known file type prefixes on to the
+  *
+  * List pulled from https://en.wikipedia.org/wiki/List_of_file_signatures with a lot of regex.
+  *
   */
 class Prefix extends Mutator {
   override def mutate(in: Array[Byte], rand: Random): Array[Byte] = {
