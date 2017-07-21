@@ -1,0 +1,15 @@
+org.catapult.sa.tribble.mutators.ExtendShort
+org.catapult.sa.tribble.mutators.ExtendLong
+org.catapult.sa.tribble.mutators.DoubleUp
+org.catapult.sa.tribble.mutators.Trim
+org.catapult.sa.tribble.mutators.Prefix
+org.catapult.sa.tribble.mutators.AddOne
+org.catapult.sa.tribble.mutators.MinusOne
+org.catapult.sa.tribble.mutators.ChangeByte
+org.catapult.sa.tribble.mutators.ChangeFirstByte
+org.catapult.sa.tribble.mutators.ShiftRight
+org.catapult.sa.tribble.mutators.ShiftLeft
+org.catapult.sa.tribble.mutators.FlipByte
+org.catapult.sa.tribble.mutators.Swap
+org.catapult.sa.tribble.mutators.InterestingByte
+org.catapult.sa.tribble.mutators.InterestingInts
