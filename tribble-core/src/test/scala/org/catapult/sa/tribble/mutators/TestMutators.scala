@@ -3,6 +3,7 @@ package org.catapult.sa.tribble.mutators
 import org.junit.Assert._
 import org.junit.Test
 
+import org.catapult.sa.tribble.CommonBytes._
 import org.catapult.sa.tribble.CommonTest._
 
 import scala.util.Random

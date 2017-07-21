@@ -2,7 +2,7 @@ package org.catapult.sa.tribble.mutators
 
 import scala.util.Random
 
-import org.catapult.sa.tribble.ByteUtils._
+import org.catapult.sa.tribble.CommonBytes._
 
 /**
   * This file contains the default set of mutators.

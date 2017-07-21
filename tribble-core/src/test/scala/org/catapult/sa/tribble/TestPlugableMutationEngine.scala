@@ -1,5 +1,6 @@
 package org.catapult.sa.tribble
 
+import org.catapult.sa.tribble.CommonBytes._
 import org.catapult.sa.tribble.CommonTest._
 
 import org.junit.Assert._
