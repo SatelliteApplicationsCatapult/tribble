@@ -143,6 +143,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_O
 * [Wil Selwood](https://github.com/wselwood)
 * [Cameron Shiell](https://github.com/amanshu)
 * [Chen Chenglong](https://github.com/ccl0326)
+* [Keegan Neave](https://github.com/kneave)
 
 ## Thanks
 
