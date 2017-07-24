@@ -12,9 +12,9 @@ object CommonBytes {
   def b(i: Int): Byte = i.asInstanceOf[Byte]
 
   /**
-    *
-    * @param a
-    * @return
+    * Short hand construction of an array of bytes from a set of ints.
+    * @param a incoming ints.
+    * @return the incoming ints mapped to bytes and made an array.
     */
   def a(a : Int *) : Array[Byte] = a.map(b).toArray
 }

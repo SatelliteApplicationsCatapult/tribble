@@ -23,7 +23,7 @@ class PlugableMutationEngine(rand : Random) extends MutationEngine {
     val classLoader = getClass.getClassLoader
     classLoader.getResources("org.catapult.sa.tribble.mutators").flatMap { u =>
       IOUtils.readLines(u.openStream(), StandardCharsets.UTF_8).flatMap { l =>
-        if (StringUtils.isNotBlank(l)) {
+        if (StringUtils.isNotBlank(l) || l.startsWith("#")) {
           try {
             val c = classLoader.loadClass(l)
             if (classOf[Mutator].isAssignableFrom(c)) {
