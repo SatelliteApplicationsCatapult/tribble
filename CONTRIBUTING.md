@@ -1,7 +1,9 @@
 # How to Contribute
 
 Any contributions no matter how small are always welcome. We welcome every thing from bug reports, typo corrections in 
-documentation to new features or translations. 
+documentation to new features or translations. We try to label issues that should be reasonably easy to do and give a good itroduction
+as [New Contributor Friendly](https://github.com/SatelliteApplicationsCatapult/tribble/issues?q=is%3Aissue+is%3Aopen+label%3A%22New+Contributor+Friendly%22) 
+However don't feel limited to tackelling these. If you want to jump in to something with a bit more substance go for it.
 
 ## Short version
 Gradle build. Github fork, branch, and pull requests. Github issues. Travis CI. Bintray JCenter releases.
