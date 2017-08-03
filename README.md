@@ -128,11 +128,7 @@ command line.
 
 ## Where next?
 
-* Multi node (Clustering, boss/worker client server system)
-* Smarter mutation strategies (See AFL and GoFuzz)
-* Find minimum version of input that will produce same branch before saving
-* Support Scala 2.11.7 as a minimum (Spark support)
-* Gradle support
+See the Issues list. 
 
 ## Contributing 
 
