@@ -38,8 +38,8 @@ class Fuzzer(corpusPath : String = "corpus",
 
     val stats = new Stats()
 
-    val workStack = new LinkedBlockingQueue[Array[Byte]]()
-    workStack.put(Array[Byte]()) // first time through always try with an empty array just in case the corpus is empty
+    val workStack = new LinkedBlockingQueue[(Array[Byte], String)]()
+    workStack.put((Array[Byte](), "Initial Value")) // first time through always try with an empty array just in case the corpus is empty
     Corpus.readCorpusInputStack(corpusPath, workStack)
 
 
@@ -58,9 +58,9 @@ class Fuzzer(corpusPath : String = "corpus",
       }
     })
 
-    val futures = (0 to 2).map( _ => {
+    val futures = (0 to threadCount).map( _ => {
       pool.submit(new Runnable() {
-        def run() : Unit = fuzzLoop(targetName, coverageSet, workStack, stats)
+        def run() : Unit = fuzzLoop(targetName, coverageSet, workStack, stats, cl)
       })
     }).toList
 
@@ -80,8 +80,9 @@ class Fuzzer(corpusPath : String = "corpus",
 
   private def fuzzLoop(targetName : String,
                        coverageSet : ConcurrentHashMap[String, Object],
-                       workQueue : BlockingQueue[Array[Byte]],
-                       stats : Stats): Unit = {
+                       workQueue : BlockingQueue[(Array[Byte], String)],
+                       stats : Stats,
+                       parent : ClassLoader): Unit = {
 
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler {
       override def uncaughtException(t: Thread, e: Throwable): Unit = {
@@ -90,7 +91,7 @@ class Fuzzer(corpusPath : String = "corpus",
       }
     })
 
-    var (memoryClassLoader, targetClass) = createClassLoader(targetName)
+    var (memoryClassLoader, targetClass) = createClassLoader(targetName, parent)
 
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
@@ -101,54 +102,62 @@ class Fuzzer(corpusPath : String = "corpus",
 
       if (workQueue.isEmpty) {
         Corpus.readCorpusInputStack(corpusPath, workQueue)
+
+        val drain = new java.util.ArrayList[(Array[Byte], String)]()
+        workQueue.drainTo(drain)
+
         if (pathCountLastLoad == coverageSet.size()) {
-          // System.err.println("No change from last reset point. Performing large mutation.")
+
           // the last run did not generate any new coverages. Really randomise the corpus this time.
-          val drain = new java.util.ArrayList[Array[Byte]]()
-          workQueue.drainTo(drain)
           // mutate lots of times and try again
           // Note: asScalaBuffer is deprecated in scala 2.12 however for now we need to support 2.11 which doesn't have the same class.
-          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => mutator.mutate(a))).asJavaCollection)
+          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => mutator.mutate(a._1))).map(_._1 -> "big").asJavaCollection)
+        } else {
+          // mutate everything from the corpus.
+          workQueue.addAll(asScalaBuffer(drain).map(e => mutator.mutate(e._1)).asJavaCollection)
         }
         pathCountLastLoad = coverageSet.size()
-
       }
 
       val old = workQueue.poll()
+      if (old != null) { // possible race condition between the last two lines. Go around again if it happens. Scala has no continue keyword
 
-      val start = System.currentTimeMillis()
-      val (result, hash, ex) = runOnce(targetClass, old, memoryClassLoader)
-      val totalTime = System.currentTimeMillis() - start
+        val start = System.currentTimeMillis()
+        val (result, hash, ex) = runOnce(targetClass, old._1, memoryClassLoader)
+        val totalTime = System.currentTimeMillis() - start
 
-      // If we had an error and its an out of memory error.
-      // Kill off the class and the classloader. Manually GC and then recreate the classloader.
-      if (ex.isDefined && ex.get.isInstanceOf[OutOfMemoryError]) {
-        targetClass = null
-        memoryClassLoader = null
+        // If we had an error and its an out of memory error.
+        // Kill off the class and the classloader. Manually GC and then recreate the classloader.
+        if (ex.isDefined && ex.get.isInstanceOf[OutOfMemoryError]) {
+          targetClass = null
+          memoryClassLoader.shutdown()
+          memoryClassLoader = null
 
-        System.gc()
-        val (newMemoryClassLoader, newTargetClass) = createClassLoader(targetName)
-        memoryClassLoader = newMemoryClassLoader
-        targetClass = newTargetClass
-      }
-
-      val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
-
-      if (result == FuzzResult.FAILED) {
-        Corpus.saveResult(old, false, ex, corpusPath, failedPath)
-      }
-
-      if (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING) {
-        coverageSet.put(hash, obj)
-
-        if (FuzzResult.Passed(result)) {
-          Corpus.saveResult(old, true, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
-          val newInput = mutator.mutate(old)
-          workQueue.put(newInput)
+          System.gc()
+          val (newMemoryClassLoader, newTargetClass) = createClassLoader(targetName, parent)
+          memoryClassLoader = newMemoryClassLoader
+          targetClass = newTargetClass
         }
-        stats.addRun(success = FuzzResult.Passed(result) , timeout = wasTimeout, newPath = true, totalTime)
-      } else {
-        stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = false, totalTime)
+
+        val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
+
+        if (result == FuzzResult.FAILED) {
+          Corpus.saveResult(old._1, false, ex, corpusPath, failedPath)
+        }
+
+        if (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING) {
+          coverageSet.put(hash, obj)
+
+          if (FuzzResult.Passed(result)) {
+            Corpus.saveResult(old._1, true, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
+          }
+
+          val newInput = mutator.mutate(old._1)
+          workQueue.put(newInput)
+          stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = true, totalTime, old._2)
+        } else {
+          stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = false, totalTime, old._2)
+        }
       }
     }
 
@@ -183,8 +192,8 @@ class Fuzzer(corpusPath : String = "corpus",
     }
   }
 
-  private def createClassLoader[T <: FuzzTest](targetName : String) : (CoverageMemoryClassLoader, Class[T]) = {
-    val memoryClassLoader = new CoverageMemoryClassLoader(Thread.currentThread().getContextClassLoader)
+  private def createClassLoader[T <: FuzzTest](targetName : String, parent : ClassLoader) : (CoverageMemoryClassLoader, Class[T]) = {
+    val memoryClassLoader = new CoverageMemoryClassLoader(parent)
 
     ignoreClasses.filter(StringUtils.isNotBlank).foreach(memoryClassLoader.addFilter)
     memoryClassLoader.addClass(targetName)
