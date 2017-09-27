@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import javax.xml.bind.DatatypeConverter
 
+import org.apache.commons.io.IOUtils
 import org.jacoco.core.analysis.{Analyzer, CoverageBuilder, IClassCoverage, ICounter}
 import org.jacoco.core.data.{ExecutionDataStore, SessionInfoStore}
 import org.jacoco.core.instr.Instrumenter
@@ -38,7 +39,11 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
     */
   def addClass(name : String) : Array[Byte] = {
     val classFile = CoverageMemoryClassLoader.getClassStream(name, parent)
-    instr.instrument(classFile, name)
+    try {
+      instr.instrument(classFile, name)
+    } finally {
+      IOUtils.closeQuietly(classFile)
+    }
   }
 
   /**
@@ -54,6 +59,7 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
   }
 
   def shutdown() : Unit = {
+    data.reset()
     runtime.shutdown()
   }
 
@@ -98,7 +104,9 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
 
     this.getDefinedClasses.foreach(e => {
       // have to reload the classes here as we need the un-instrumented ones.
-      analyzer.analyzeClass(CoverageMemoryClassLoader.getClassStream(e, parent), e)
+      val stream = CoverageMemoryClassLoader.getClassStream(e, parent)
+      analyzer.analyzeClass(stream, e)
+      stream.close()
     })
 
     // make sure we are always generating the hash in the same order.
@@ -138,6 +146,17 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
 }
 
 object CoverageMemoryClassLoader {
+
+  /**
+    * Get hold a stream for a class file.
+    *
+    * If you use this make sure you close the stream. If you don't call close on the stream object you will leak memory
+    * as the stream used in the background to read the jar file will not be closed which will leave memory hanging around
+    *
+    * @param name class name to find
+    * @param parent the class loader to use to find this class.
+    * @return Inputstream that you cna read the class from. Make sure you call close on this.
+    */
   def getClassStream(name : String, parent : ClassLoader) : InputStream = {
     val res =  name.replace('.', '/') + ".class"
     val result = parent.getResourceAsStream(res)
