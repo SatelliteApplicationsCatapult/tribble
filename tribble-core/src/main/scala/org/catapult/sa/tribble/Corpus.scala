@@ -24,13 +24,14 @@ object Corpus {
     }
 
     if (!corpusFile.exists()) {
-      println("Corpus folder does not exist. Creating. WARNING you should give the tribbles some guidance where to start.")
+      println("Corpus folder does not exist. Creating. ERROR: you must give the tribbles some guidance where to start.")
       Files.createDirectory(Paths.get(corpusPath))
+      return false
     }
 
     val files = corpusFile.listFiles()
     if (files == null || files.isEmpty) {
-      println("Corpus folder exists but is empty. WARNING You must provide an initial entry")
+      println("Corpus folder exists but is empty. ERROR: You must provide an initial entry")
       return false
     }
 
@@ -50,16 +51,17 @@ object Corpus {
 
   private val lock = new Object()
 
-  def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[Array[Byte]]): Unit = {
+  def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[(Array[Byte], String)]): Unit = {
     lock.synchronized {
       if (stack.isEmpty) { // don't write it twice.
+
         Files.newDirectoryStream(Paths.get(corpusPath)).asScala.foreach((f : Path) => {
           val stream = new FileInputStream(f.toFile)
           if (f.getFileName.endsWith(".hex")) {
             val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
-            stack.put(DatatypeConverter.parseHexBinary(hexString))
+            stack.put(DatatypeConverter.parseHexBinary(hexString) -> "Corpus")
           } else {
-            stack.put(IOUtils.toByteArray(stream))
+            stack.put(IOUtils.toByteArray(stream) -> "Corpus")
           }
           IOUtils.closeQuietly(stream)
         })

@@ -6,7 +6,7 @@ package org.catapult.sa.tribble
   * This is an interface to allow us to experiment easily with different mutation strategies.
   */
 trait MutationEngine {
-  def mutate(input: Array[Byte]): Array[Byte]
+  def mutate(input: Array[Byte]): (Array[Byte], String)
   // TODO: Add some method of feeding back how a mutation went.
 }
 

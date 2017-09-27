@@ -2,6 +2,8 @@ package org.catapult.sa.tribble
 
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
+import scala.collection.mutable
+
 /**
   * Keep track of the stats. Number of runs, number of crashes etc
   *
@@ -14,10 +16,11 @@ class Stats {
   private val timeouts = new AtomicLong(0)
   private val paths = new AtomicInteger(0)
   private val totalTime = new AtomicLong(0)
+  private val mutators = mutable.HashMap.empty[String, (AtomicLong, AtomicLong)]
   private val minTime = new AtomicLong(Long.MaxValue)
   private val maxTime = new AtomicLong(Long.MinValue)
 
-  def addRun(success : Boolean, timeout: Boolean, newPath : Boolean, time : Long): Unit = {
+  def addRun(success : Boolean, timeout: Boolean, newPath : Boolean, time : Long, mutator : String): Unit = {
     runs.incrementAndGet()
     if (!success) {
       if (timeout) {
@@ -32,6 +35,14 @@ class Stats {
     }
 
     totalTime.addAndGet(time)
+
+    val mutatorValue = mutators.getOrElseUpdate(mutator, (new AtomicLong(0), new AtomicLong(0)))
+    mutatorValue._2.incrementAndGet()
+    if (newPath) {
+      mutatorValue._1.incrementAndGet()
+    }
+
+    mutators.update(mutator, mutatorValue)
 
     var setSuccess = false
     do {
@@ -59,18 +70,26 @@ class Stats {
     val tt = totalTime.get()
     val r = runs.get()
     val avg = if (r == 0) 0 else tt/r
-    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get())
+    val m = mutators.map(a => a._1 -> (a._2._1.get() -> a._2._2.get())).toMap
+    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get(), m)
   }
 
 }
 
-case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long) {
+case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long, mutators : Map[String, (Long, Long)]) {
   override def toString: String = {
     val t = CurrentStats.formatDuration(totalTime)
     val a = CurrentStats.formatDuration(averageTime)
     val min = if (minTime == Long.MaxValue) "~" else CurrentStats.formatDuration(minTime)
     val max = if (maxTime == Long.MinValue) "~" else CurrentStats.formatDuration(maxTime)
-    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max"
+
+    val mutatorStats = mutators.map { a =>
+      val ratio = a._2._1.toDouble / a._2._2.toDouble
+      s"${a._1},${a._2._1},${a._2._2},${ratio}"
+    }.mkString("\n")
+    val mutatorHeader = "mutator,paths,runs,ratio"
+
+    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max\n$mutatorHeader\n$mutatorStats"
   }
 }
 

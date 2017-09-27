@@ -11,6 +11,7 @@ import org.catapult.sa.tribble.CommonBytes._
   * tribble\tribble-core\src\main\resources\META-INF\org.catapult.sa.tribble.mutators
   *
   * TODO: add a gradle build step to generate the file from this file. "class ([A-Z][a-zA-Z0-9]+) extends Mutator {"
+  * Note this will have to handle other things like the Prefix class. Maybe find any thing in the project that extends Mutator?
   */
 
 /**

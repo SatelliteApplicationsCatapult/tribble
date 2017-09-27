@@ -15,7 +15,7 @@ class TestPlugableMutationEngine {
     val engine = new PlugableMutationEngine(r)
     val result = engine.mutate(a(0x01, 0x02))
 
-    assertArrayEquals(a(0x01, 0x02, 0x01, 0x02), result)
+    assertArrayEquals(a(0x01, 0x02, 0x01, 0x02), result._1)
   }
 
   @Test
@@ -23,7 +23,7 @@ class TestPlugableMutationEngine {
     val engine = new PlugableMutationEngine(rand())
     val result = engine.mutate(null)
 
-    assertArrayEquals(a(0x00), result)
+    assertArrayEquals(a(0x00), result._1)
   }
 
   @Test
@@ -31,6 +31,6 @@ class TestPlugableMutationEngine {
     val engine = new PlugableMutationEngine(rand())
     val result = engine.mutate(a())
 
-    assertArrayEquals(a(0x00), result)
+    assertArrayEquals(a(0x00), result._1)
   }
 }
