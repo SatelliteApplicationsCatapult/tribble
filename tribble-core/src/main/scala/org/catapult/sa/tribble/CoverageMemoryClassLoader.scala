@@ -28,6 +28,7 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
   runtime.startup(data)
 
   private val definitionClasses = new mutable.HashMap[String, Class[_]]()
+  private val classBlobs = new mutable.HashMap[String, Array[Byte]]()
   private val instr = new Instrumenter(runtime)
 
   private val ignores = new mutable.ArrayBuffer[String](5)
@@ -40,7 +41,9 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
   def addClass(name : String) : Array[Byte] = {
     val classFile = CoverageMemoryClassLoader.getClassStream(name, parent)
     try {
-      instr.instrument(classFile, name)
+      val fileContent = IOUtils.toByteArray(classFile)
+      classBlobs.put(name, fileContent)
+      instr.instrument(fileContent, name)
     } finally {
       IOUtils.closeQuietly(classFile)
     }
@@ -102,11 +105,9 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
     val coverageBuilder = new CoverageBuilder
     val analyzer = new Analyzer(executionData, coverageBuilder)
 
-    this.getDefinedClasses.foreach(e => {
+    this.classBlobs.foreach(e => {
       // have to reload the classes here as we need the un-instrumented ones.
-      val stream = CoverageMemoryClassLoader.getClassStream(e, parent)
-      analyzer.analyzeClass(stream, e)
-      stream.close()
+      analyzer.analyzeClass(e._2, e._1)
     })
 
     // make sure we are always generating the hash in the same order.
