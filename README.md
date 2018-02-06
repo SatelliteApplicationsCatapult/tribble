@@ -125,6 +125,7 @@ command line.
 | count | --count | number of iterations to run. Number greater than zero for a limit | -1 |
 | ignoreClasses | | List of class prefixes e.g `org.apache.hadoop.` to ignore from coverage. This is useful if you find some classes are already loaded. | |
 | | --ignoreClasses | Comma Seperated list of class prefixes to ignore.  e.g `org.apache.hadoop.` | |
+| verbose | --verbose | Should verbose mutator stats be printed. | false |
 
 ## Where next?
 

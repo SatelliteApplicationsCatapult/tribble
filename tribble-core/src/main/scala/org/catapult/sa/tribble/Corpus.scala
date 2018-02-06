@@ -10,6 +10,7 @@ import javax.xml.bind.DatatypeConverter
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   * Functions for dealing with the corpus of inputs and mutating them.
@@ -52,26 +53,39 @@ object Corpus {
   private val lock = new Object()
 
   def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[(Array[Byte], String)]): Unit = {
-    lock.synchronized {
-      if (stack.isEmpty) { // don't write it twice.
-
-        Files.newDirectoryStream(Paths.get(corpusPath)).asScala.foreach((f : Path) => {
-          val stream = new FileInputStream(f.toFile)
-          if (f.getFileName.endsWith(".hex")) {
-            val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
-            stack.put(DatatypeConverter.parseHexBinary(hexString) -> "Corpus")
-          } else {
-            stack.put(IOUtils.toByteArray(stream) -> "Corpus")
+    if (stack.isEmpty) {
+      lock.synchronized {
+        if (stack.isEmpty) {
+          if (corpus.isEmpty) {
+            loadInputs(corpusPath)
           }
-          IOUtils.closeQuietly(stream)
-        })
+
+          corpus.foreach(stack.add)
+        }
       }
     }
   }
 
+  private def loadInputs(corpusPath : String ) : Unit = {
+    corpus.appendAll(Files.newDirectoryStream(Paths.get(corpusPath)).asScala.map((f: Path) => {
+      val stream = new FileInputStream(f.toFile)
+      val result = if (f.getFileName.endsWith(".hex")) {
+        val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
+        DatatypeConverter.parseHexBinary(hexString) -> "Corpus"
+      } else {
+        IOUtils.toByteArray(stream) -> "Corpus"
+      }
+      IOUtils.closeQuietly(stream)
+      result
+    }))
+  }
+
+  private val corpus : mutable.ArrayBuffer[(Array[Byte], String)] = mutable.ArrayBuffer.empty
+
+
   def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], corpusPath : String, failedPath : String): Unit = {
 
-    val md5 = MessageDigest.getInstance("MD5")
+
     val filename = if(!success) {
       ex match {
         case None => "NoStackTrace"
@@ -80,19 +94,24 @@ object Corpus {
     } else if (input == null) {
       "null"
     } else {
+      val md5 = MessageDigest.getInstance("MD5")
       DatatypeConverter.printHexBinary(md5.digest(input))
     }
 
     if (!success) { // failed, record it in the crashers. But don't keep it for mutations.
-      Corpus.saveArray(input, s"$failedPath/$filename.failed")
-      ex.foreach(e => {
-        val exOut = new PrintStream(new FileOutputStream(s"$failedPath/$filename.stacktrace"))
-        e.printStackTrace(exOut)
-        exOut.flush()
-        exOut.close()
-      })
+      if (! Files.exists(Paths.get(s"$failedPath/$filename.failed"))) {
+        Corpus.saveArray(input, s"$failedPath/$filename.failed")
+
+        ex.foreach(e => {
+          val exOut = new PrintStream(new FileOutputStream(s"$failedPath/$filename.stacktrace"))
+          e.printStackTrace(exOut)
+          exOut.flush()
+          exOut.close()
+        })
+      }
     } else { // new and didn't fail so add it to our corpus
       Corpus.saveArray(input, s"$corpusPath/$filename.input")
+      corpus.append(input -> "Corpus")
     }
   }
 

@@ -13,6 +13,7 @@ object App extends Arguments {
   private val FAILED = "failed"
   private val COUNT = "count"
   private val IGNORECLASSES = "ignore"
+  private val VERBOSE = "verbose"
 
 
   override def allowedArgs(): List[Argument] = List(
@@ -22,7 +23,8 @@ object App extends Arguments {
     Argument(TIMEOUT, "1000"),
     Argument(COUNT, "-1"),
     Argument(TARGET_CLASS),
-    Argument(IGNORECLASSES)
+    Argument(IGNORECLASSES),
+    Argument(VERBOSE, "false", flag = true)
   )
 
   def main(args : Array[String]) : Unit = {
@@ -60,7 +62,8 @@ object App extends Arguments {
       arguments(IGNORECLASSES).split(","),
       arguments(THREAD_COUNT).toInt,
       arguments(TIMEOUT).toLong,
-      arguments(COUNT).toLong
+      arguments(COUNT).toLong,
+      arguments(VERBOSE).toBoolean
     )
 
     fuzzer.run(arguments(TARGET_CLASS), getClass.getClassLoader)

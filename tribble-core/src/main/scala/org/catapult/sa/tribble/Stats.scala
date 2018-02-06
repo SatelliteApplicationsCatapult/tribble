@@ -66,30 +66,39 @@ class Stats {
 
   }
 
-  def getStats : CurrentStats = {
+  def getStats(printDetailedStats : Boolean) : CurrentStats = {
     val tt = totalTime.get()
     val r = runs.get()
     val avg = if (r == 0) 0 else tt/r
-    val m = mutators.map(a => a._1 -> (a._2._1.get() -> a._2._2.get())).toMap
-    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get(), m)
+    val m = if (printDetailedStats) {
+      mutators.map(a => a._1 -> (a._2._1.get() -> a._2._2.get())).toMap
+    } else {
+      Map.empty[String,(Long, Long)]
+    }
+    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get(), m, printDetailedStats)
   }
 
 }
 
-case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long, mutators : Map[String, (Long, Long)]) {
+case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long, mutators : Map[String, (Long, Long)], printDetailedStats : Boolean) {
   override def toString: String = {
     val t = CurrentStats.formatDuration(totalTime)
     val a = CurrentStats.formatDuration(averageTime)
     val min = if (minTime == Long.MaxValue) "~" else CurrentStats.formatDuration(minTime)
     val max = if (maxTime == Long.MinValue) "~" else CurrentStats.formatDuration(maxTime)
 
-    val mutatorStats = mutators.map { a =>
-      val ratio = a._2._1.toDouble / a._2._2.toDouble
-      s"${a._1},${a._2._1},${a._2._2},${ratio}"
-    }.mkString("\n")
-    val mutatorHeader = "mutator,paths,runs,ratio"
+    val mutatorText = if (printDetailedStats) {
+      val mutatorStats = mutators.map { a =>
+        val ratio = a._2._1.toDouble / a._2._2.toDouble
+        s"${a._1},${a._2._1},${a._2._2},${ratio}"
+      }.mkString("\n")
+      val mutatorHeader = "mutator,paths,runs,ratio"
+      s"\n$mutatorHeader\n$mutatorStats"
+    } else {
+      ""
+    }
 
-    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max\n$mutatorHeader\n$mutatorStats"
+    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max$mutatorText"
   }
 }
 

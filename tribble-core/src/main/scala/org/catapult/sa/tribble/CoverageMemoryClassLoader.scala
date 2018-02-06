@@ -156,7 +156,7 @@ object CoverageMemoryClassLoader {
     *
     * @param name class name to find
     * @param parent the class loader to use to find this class.
-    * @return Inputstream that you cna read the class from. Make sure you call close on this.
+    * @return Inputstream that you can read the class from. Make sure you call close on this.
     */
   def getClassStream(name : String, parent : ClassLoader) : InputStream = {
     val res =  name.replace('.', '/') + ".class"
