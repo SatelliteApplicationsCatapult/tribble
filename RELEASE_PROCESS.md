@@ -11,6 +11,7 @@ This is mainly documented for my own sake. However it might leave some breadcrum
 * Create a release in Github with the name `v{current.version}`
 * Run the bintrayUpload task on the root project on your local machine. You will need to have `systemProp.BINTRAY_USER` 
 and `systemProp.BINTRAY_KEY` set in your local user gradle.properties DO NOT CHECK THIS IN
+* Log in to bintray and publish the two releases
 * Bump the version number and put the `-SNAPSHOT` extension back on. 
 * Bump the versions in the `README.md` file.
 * Create a pull request to update master with the new version number.

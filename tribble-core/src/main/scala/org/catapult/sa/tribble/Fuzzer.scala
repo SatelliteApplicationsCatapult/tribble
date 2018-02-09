@@ -21,7 +21,8 @@ class Fuzzer(corpusPath : String = "corpus",
              ignoreClasses : Array[String] = Array(),
              threadCount : Int = 2,
              timeout : Long = 1000L,
-             iterationCount : Long = -1) {
+             iterationCount : Long = -1,
+             printDetailedStats: Boolean = true) {
 
   val rand = new Random()
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
@@ -34,6 +35,11 @@ class Fuzzer(corpusPath : String = "corpus",
   }
 
   def run(targetName : String, cl : ClassLoader) : Unit = {
+
+    if (!Corpus.validateDirectories(corpusPath, failedPath)) {
+      return
+    }
+
     val coverageSet = new ConcurrentHashMap[String, Object]()
 
     val stats = new Stats()
@@ -68,7 +74,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
     while(futures.exists(!_.isDone)) {
       pool.awaitTermination(5, TimeUnit.SECONDS)
-      System.err.println(stats.getStats)
+      System.err.println(stats.getStats(printDetailedStats))
     }
 
     val fails = futures.filter(_.get().isInstanceOf[Throwable])
