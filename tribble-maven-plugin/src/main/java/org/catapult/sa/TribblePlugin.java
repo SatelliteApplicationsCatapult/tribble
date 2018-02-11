@@ -41,9 +41,11 @@ public class TribblePlugin extends AbstractMojo {
     @Parameter(property = "fuzztest.count", required = true, defaultValue = "-1")
     public long count;
 
-
     @Parameter(property = "fuzztest.verbose", required = true, defaultValue = "true")
     public boolean verbose;
+
+    @Parameter(property = "fuzztext.disabledMutators", required = true, defaultValue = "")
+    public String[] disabledMutators;
 
     @Parameter(property = "fuzztest.ignoreClasses")
     public String[] ignoreClasses;
@@ -79,7 +81,7 @@ public class TribblePlugin extends AbstractMojo {
 
             Thread.currentThread().setContextClassLoader(projectRealm);
 
-            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, ignoreClasses, threads, timeout, count, verbose);
+            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, ignoreClasses, threads, timeout, count, verbose, disabledMutators);
             fuzzer.run(target, projectRealm);
 
         } catch (DuplicateRealmException | MalformedURLException e) {
