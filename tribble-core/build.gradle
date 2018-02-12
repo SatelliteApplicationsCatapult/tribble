@@ -68,9 +68,6 @@ publishing {
     publications {
         tribbleCorePub(MavenPublication) {
             from components.java
-            artifact jar
-            artifact sourcesJar
-            artifact javadocJar
             groupId project.group
             artifactId project.name
             version project.version
