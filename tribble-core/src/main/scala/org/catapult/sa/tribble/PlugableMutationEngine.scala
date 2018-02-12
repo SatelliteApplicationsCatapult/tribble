@@ -17,15 +17,17 @@ import scala.util.Random
   *
   * This should make it very easy to add new experimental mutation strategies
   */
-class PlugableMutationEngine(rand: Random) extends MutationEngine {
+class PlugableMutationEngine(rand: Random, disabledMutators : Array[String] = Array()) extends MutationEngine {
 
   private val mutators = findClasses()
   private val mutatorsNames = mutators.map(_.getClass.getSimpleName)
+
 
   private def findClasses(): List[Mutator] = {
     val classLoader = getClass.getClassLoader
     classLoader.getResources("org.catapult.sa.tribble.mutators")
       .flatMap(loadFile(_, classLoader))
+      .filterNot(c => disabledMutators.contains(c.getName))
       .map(_.newInstance())
       .toList
   }

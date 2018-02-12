@@ -1,6 +1,7 @@
 package org.catapult.sa.tribble
 
 import org.apache.commons.lang.StringUtils
+import org.catapult.sa.tribble
 /**
  * Entry point for command line usage of the tribble fuzz testing tool.
  */
@@ -14,6 +15,7 @@ object App extends Arguments {
   private val COUNT = "count"
   private val IGNORECLASSES = "ignore"
   private val VERBOSE = "verbose"
+  private val DISABLED = "disabledMutations"
 
 
   override def allowedArgs(): List[Argument] = List(
@@ -24,7 +26,8 @@ object App extends Arguments {
     Argument(COUNT, "-1"),
     Argument(TARGET_CLASS),
     Argument(IGNORECLASSES),
-    Argument(VERBOSE, "false", flag = true)
+    Argument(VERBOSE, "false", flag = true),
+    Argument(DISABLED)
   )
 
   def main(args : Array[String]) : Unit = {
@@ -63,7 +66,8 @@ object App extends Arguments {
       arguments(THREAD_COUNT).toInt,
       arguments(TIMEOUT).toLong,
       arguments(COUNT).toLong,
-      arguments(VERBOSE).toBoolean
+      arguments(VERBOSE).toBoolean,
+      arguments(DISABLED).split(",")
     )
 
     fuzzer.run(arguments(TARGET_CLASS), getClass.getClassLoader)

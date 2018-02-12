@@ -123,9 +123,11 @@ command line.
 | threads | --threads | Number of threads to use | 2 |
 | timeout | --timeout | Time out for an individual test run in milliseconds | 1000 |
 | count | --count | number of iterations to run. Number greater than zero for a limit | -1 |
+| verbose | --verbose | Should verbose mutator stats be printed. | false |
 | ignoreClasses | | List of class prefixes e.g `org.apache.hadoop.` to ignore from coverage. This is useful if you find some classes are already loaded. | |
 | | --ignoreClasses | Comma Seperated list of class prefixes to ignore.  e.g `org.apache.hadoop.` | |
-| verbose | --verbose | Should verbose mutator stats be printed. | false |
+| disabledMutators | | List of mutator class names to disable | |
+| | --disabledMutations | Comma seperated list of mutators to disable | |
 
 ## Where next?
 
