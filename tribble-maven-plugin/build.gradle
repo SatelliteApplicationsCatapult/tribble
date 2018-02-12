@@ -41,8 +41,9 @@ dependencies {
 // in the jar and end up with a working plugin.
 task createPom() {
     doLast {
-        def pd = project.projectDir.absolutePath
-        def bd = project.buildDir.absolutePath
+        def pd = project.sourceSets.main.java.srcDirs
+        def bd = project.compileJava.destinationDir.absolutePath
+        String pack = project.group.replace('.', '/')
         install.repositories.mavenInstaller.pom = pom {
             project {
                 groupId project.group
@@ -62,12 +63,12 @@ task createPom() {
         }.withXml {
             asNode().appendNode('build')
                     .with {
-                appendNode('directory', pd)
-                appendNode('outputDirectory', bd + "/classes/main")
+                appendNode('directory', pd + pack)
+                appendNode('outputDirectory', bd)
             }
         }
 
-        println("project path: ${project.projectDir.absolutePath}")
+        println("project path: ${project.sourceSets.main.java.srcDirs}")
         println("build path: ${project.buildDir.absolutePath}")
 
         install.repositories.mavenInstaller.pom.writeTo("${project.buildDir.absolutePath}/pom.xml")
@@ -86,7 +87,8 @@ task pluginDescriptor( type: Exec ) {
         assert pom.file, "[$pom.canonicalPath] was not created"
     }
     doLast {
-        final  pluginDescriptor = new File(( File ) project.compileJava.destinationDir, 'META-INF/maven/plugin.xml' )
+        String pack = project.group.replace('.', '/')
+        final  pluginDescriptor = new File(( File ) project.compileJava.destinationDir, '/META-INF/maven/plugin.xml' )
         assert pluginDescriptor.file, "[$pluginDescriptor.canonicalPath] was not created"
         println "Plugin descriptor file:$pluginDescriptor.canonicalPath is created successfully"
     }
