@@ -54,8 +54,9 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
     </configuration>
 </plugin>
 ```
-* Create a class that implements `FuzzTest` which will run a single test case with the provided data. If this class returns false
-or throws an exception the run is considered to be a failure. This class can be in the `src/test` tree
+* Create a class that implements `FuzzTest` which will run a single test case with the provided data. This class should return
+a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class can be 
+in the `src/test` tree
 * Configure the target class name in the plugin.
 * Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
 your application. The more the merrier.
@@ -69,6 +70,20 @@ or throws an exception the run is considered to be a failure.
 your application. The more the merrier.
 * Run `org.catapult.sa.tribble.App` passing `--targetClass` to set where your implementation of `FuzzTest` lives and the
 required class path.
+
+### Example Test Class
+
+```Scala
+import org.catapult.sa.tribble.{FuzzResult, FuzzTest}
+
+class TestCase extends FuzzTest {
+
+  def test(data : Array[Byte]): FuzzResult = {
+    Fish.wibble(data)
+    FuzzResult.OK
+  }
+}
+```
 
 ### General Usage
 Stats will be printed to stderr at regular intervals. A folder called `failed` will be created on startup and populated 
@@ -143,6 +158,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_O
 * [Cameron Shiell](https://github.com/amanshu)
 * [Chen Chenglong](https://github.com/ccl0326)
 * [Keegan Neave](https://github.com/kneave)
+* [DittyTwo](https://github.com/dittytwo)
 
 ## Thanks
 
