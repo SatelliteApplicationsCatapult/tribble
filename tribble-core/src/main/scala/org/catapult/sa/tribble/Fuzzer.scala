@@ -22,7 +22,8 @@ class Fuzzer(corpusPath : String = "corpus",
              threadCount : Int = 2,
              timeout : Long = 1000L,
              iterationCount : Long = -1,
-             printDetailedStats: Boolean = true) {
+             printDetailedStats: Boolean = true,
+             disabledMutators: Array[String] = Array()) {
 
   val rand = new Random()
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
@@ -102,7 +103,7 @@ class Fuzzer(corpusPath : String = "corpus",
     var pathCountLastLoad = 0
     val obj = new Object() // don't create a new object for every entry in our hash "set"
 
-    val mutator = new PlugableMutationEngine(rand)
+    val mutator = new PlugableMutationEngine(rand, disabledMutators)
 
     while(countDown == null || countDown.getAndDecrement() > 0) {
 
