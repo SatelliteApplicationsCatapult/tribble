@@ -151,7 +151,7 @@ class Fuzzer(corpusPath : String = "corpus",
           Corpus.saveResult(old._1, false, ex, corpusPath, failedPath)
         }
 
-        if (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING) {
+        if (result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)) {
           coverageSet.put(hash, obj)
 
           if (FuzzResult.Passed(result)) {
