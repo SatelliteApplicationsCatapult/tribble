@@ -39,7 +39,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 <dependency>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-core</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -48,7 +48,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 <plugin>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-maven-plugin</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
     <configuration>
         <target>org.catapult.sa.testcase.TestCase</target>
     </configuration>
