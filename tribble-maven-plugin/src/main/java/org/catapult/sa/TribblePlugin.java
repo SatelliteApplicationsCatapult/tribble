@@ -44,7 +44,7 @@ public class TribblePlugin extends AbstractMojo {
     @Parameter(property = "fuzztest.verbose", required = true, defaultValue = "true")
     public boolean verbose;
 
-    @Parameter(property = "fuzztext.disabledMutators", required = true, defaultValue = "")
+    @Parameter(property = "fuzztest.disabledMutators", required = true, defaultValue = "")
     public String[] disabledMutators;
 
     @Parameter(property = "fuzztest.ignoreClasses")
