@@ -129,13 +129,10 @@ bintray {
 publishing {
     publications {
         tribbleMavenPub(MavenPublication) {
-            artifact jar
-            artifact sourcesJar
-            artifact javadocJar
+            from components.java
             groupId project.group
             artifactId project.name
             version project.version
-            from components.java
         }
     }
 }
