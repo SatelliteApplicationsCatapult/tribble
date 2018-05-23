@@ -1,14 +1,17 @@
 # How to Contribute
 
 Any contributions no matter how small are always welcome. We welcome every thing from bug reports, typo corrections in 
-documentation to new features or translations. We try to label issues that should be reasonably easy to do and give a good itroduction
-as [Help Wanted](https://github.com/SatelliteApplicationsCatapult/tribble/issues?q=is%3Aissue+is%3Aopen+label%3A%22Help+Wanted%22) 
-However don't feel limited to tackelling these. If you want to jump in to something with a bit more substance go for it.
+documentation to new features or translations. We try to label issues that should be reasonably easy to do and give a 
+good introduction as 
+[Help Wanted](https://github.com/SatelliteApplicationsCatapult/tribble/issues?q=is%3Aissue+is%3Aopen+label%3A%22Help+Wanted%22) 
+However don't feel limited to tackling these. If you want to jump in to something else go for it.
 
 ## Short version
 Gradle build. Github fork, branch, and pull requests. Github issues. Travis CI. Bintray JCenter releases.
 
-If you didn't understand that; fantastic! We really want your help, read on to find out how.
+If you didn't understand that; fantastic! We really want your help, if you don't understand something below please raise
+a [github issue](https://github.com/SatelliteApplicationsCatapult/tribble/issues/new). We will do our best to clarify and
+improve this document. 
 
 ## Getting started
 
@@ -26,7 +29,7 @@ Click the [issues](https://github.com/SatelliteApplicationsCatapult/tribble/issu
 on git hub. Click the bright [New issue](https://github.com/SatelliteApplicationsCatapult/tribble/issues/new) button. 
 
 Please give as much detail as you can. Stack traces, example code, system and platform details. Every thing no matter how
-trivial may help tracking down whats going on in your case.
+trivial may help tracking down whats going on in your case. Don't worry too much. Just give as much detail as you can.
 
 ## Making a documentation change
 
@@ -40,8 +43,8 @@ There should now be a green bar near the top of the page asking if you want to c
 
 ## Making a code change
 
-Using your local clone, make the change on a branch. If it is a large change please raise an issue first. So we know what you are 
-working on and don't duplicate effort. 
+Using your local clone, make the change on a branch. If it is a large change please raise an issue first. So we know 
+what you are working on and don't duplicate effort. 
 
 When your ready:
 * Fork the repo to your own user
