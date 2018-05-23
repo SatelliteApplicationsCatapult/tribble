@@ -1,4 +1,4 @@
-package org.catapult.sa.tribble
+package org.catapult.sa.tribble.stats
 
 import org.junit.Assert._
 import org.junit.Test
