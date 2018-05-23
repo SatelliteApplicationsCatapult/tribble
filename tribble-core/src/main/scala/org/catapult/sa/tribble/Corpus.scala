@@ -13,32 +13,31 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
-  * Functions for dealing with the corpus of inputs and mutating them.
+  * Functions for dealing with the corpus of inputs and outputs
   */
 object Corpus {
 
   def validateDirectories(corpusPath : String, failedPath : String): Boolean = {
     val corpusFile = new File(corpusPath)
     if (corpusFile.exists() && (!corpusFile.isDirectory || !corpusFile.canWrite)) {
-      println("ERROR: corpus path exists but is not a directory: " + corpusFile.getAbsolutePath)
+      println("ERROR: corpus path exists but is not a directory or not writable: " + corpusFile.getAbsolutePath)
       return false
     }
 
     if (!corpusFile.exists()) {
-      println("Corpus folder does not exist. Creating. ERROR: you must give the tribbles some guidance where to start.")
+      println("Corpus folder does not exist. Creating. WARNING: you should give the tribbles some guidance where to start.")
       Files.createDirectory(Paths.get(corpusPath))
-      return false
     }
 
     val files = corpusFile.listFiles()
     if (files == null || files.isEmpty) {
-      println("Corpus folder exists but is empty. ERROR: You must provide an initial entry")
-      return false
+      println("Corpus folder exists but is empty. WARNING: Creating a default empty file. You should give the tribbles some guidance where to start.")
+      createEmptyFile(corpusPath + "/default.txt")
     }
 
     val failedFile = new File(failedPath)
     if (failedFile.exists() && (!failedFile.isDirectory || !failedFile.canWrite)) {
-      println("ERROR: failed path exists but is not a directory: " + failedFile.getAbsolutePath)
+      println("ERROR: failed path exists but is not a directory or writable: " + failedFile.getAbsolutePath)
       return false
     }
 
@@ -67,17 +66,10 @@ object Corpus {
   }
 
   private def loadInputs(corpusPath : String ) : Unit = {
-    corpus.appendAll(Files.newDirectoryStream(Paths.get(corpusPath)).asScala.map((f: Path) => {
-      val stream = new FileInputStream(f.toFile)
-      val result = if (f.getFileName.endsWith(".hex")) {
-        val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
-        DatatypeConverter.parseHexBinary(hexString) -> "Corpus"
-      } else {
-        IOUtils.toByteArray(stream) -> "Corpus"
-      }
-      IOUtils.closeQuietly(stream)
-      result
-    }))
+    corpus.appendAll(
+      Files.newDirectoryStream(Paths.get(corpusPath)).asScala
+        .map((f: Path) => readCorpusFile(f) -> "corpus")
+    )
   }
 
   private val corpus : mutable.ArrayBuffer[(Array[Byte], String)] = mutable.ArrayBuffer.empty
@@ -121,31 +113,34 @@ object Corpus {
     DatatypeConverter.printHexBinary(md5.digest(in.getBytes(StandardCharsets.UTF_8)))
   }
 
-  def saveArray(input: Array[Byte], fileName: String): Unit = {
-    if (containsUnprintableChars(input)) {
-      if (!new File(s"$fileName.hex").exists()) {
-        val stream = new FileOutputStream(s"$fileName.hex")
-        IOUtils.write(DatatypeConverter.printHexBinary(input), stream, StandardCharsets.UTF_8)
-        IOUtils.closeQuietly(stream)
-      }
-    } else {
-      if (!new File(fileName).exists()) {
-        val stream = new FileOutputStream(fileName)
-        IOUtils.write(input, stream)
-        IOUtils.closeQuietly(stream)
-      }
+  private def saveArray(input: Array[Byte], fileName: String): Unit = {
+    if (!new File(fileName).exists()) {
+      val stream = new FileOutputStream(fileName)
+      IOUtils.write(input, stream)
+      IOUtils.closeQuietly(stream)
     }
   }
 
-  // This should handle other unprintable characters. (Really we should deal with multibyte stuff and so on)
-  // Though on the other hand we can probably deal with other lower order characters easily
-  // We should probably keep non hex files to actually type-able stuff
-  private def containsUnprintableChars(input: Array[Byte]): Boolean = {
-    if (input == null) {
-      false
+  // Provide useful options for the corpus so we can add corpus entries easier.
+  private def readCorpusFile(f: Path) : Array[Byte] = {
+    val stream = new FileInputStream(f.toFile)
+    val result = if (f.endsWith(".hex")) {
+      val hexString = IOUtils.toString(stream, StandardCharsets.UTF_8)
+      DatatypeConverter.parseHexBinary(hexString)
+    } else if (f.endsWith(".b64")) {
+      val b64String = IOUtils.toString(stream, StandardCharsets.UTF_8)
+      DatatypeConverter.parseBase64Binary(b64String)
     } else {
-      input.exists(b => b < 0x20 || b > 0x7F)
+      IOUtils.toByteArray(stream)
     }
+    IOUtils.closeQuietly(stream)
+    result
+  }
+
+  private def createEmptyFile(name: String) : Unit = {
+    val f = new FileOutputStream(name)
+    IOUtils.write("", f , StandardCharsets.UTF_8)
+    f.close()
   }
 
 
