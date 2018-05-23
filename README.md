@@ -144,6 +144,14 @@ command line.
 | disabledMutators | | List of mutator class names to disable | |
 | | --disabledMutations | Comma seperated list of mutators to disable | |
 
+## Design goals:
+1) Easy to use and setup
+1) Easy to develop and extent
+1) Fast
+
+Where goals conflict the higher design goal should take precedence. Code that is harder to update but faster should be 
+used with extreme caution.
+
 ## Where next?
 
 See the Issues list. 
