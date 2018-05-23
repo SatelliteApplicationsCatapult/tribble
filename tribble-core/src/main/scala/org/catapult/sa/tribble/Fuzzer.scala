@@ -29,6 +29,11 @@ class Fuzzer(corpusPath : String = "corpus",
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
   rand.setSeed(System.currentTimeMillis())
 
+  // TODO: other options here.
+  // HDFS/Database etc wait until these are needed.
+  // In-Memory for tests
+  val corpus : Corpus = new FileSystemCorpus(corpusPath, failedPath)
+
   private val countDown = if (iterationCount > 0)  {
     new AtomicLong(iterationCount)
   } else {
@@ -37,7 +42,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
   def run(targetName : String, cl : ClassLoader) : Unit = {
 
-    if (!Corpus.validateDirectories(corpusPath, failedPath)) {
+    if (!corpus.validate()) {
       return
     }
 
@@ -47,8 +52,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
     val workStack = new LinkedBlockingQueue[(Array[Byte], String)]()
     workStack.put((Array[Byte](), "Initial Value")) // first time through always try with an empty array just in case the corpus is empty
-    Corpus.readCorpusInputStack(corpusPath, workStack)
-
+    corpus.readCorpus(workStack)
 
     val pool: ExecutorService = Executors.newFixedThreadPool(threadCount, new ThreadFactory {
       override def newThread(r: Runnable): Thread = {
@@ -108,7 +112,7 @@ class Fuzzer(corpusPath : String = "corpus",
     while(countDown == null || countDown.getAndDecrement() > 0) {
 
       if (workQueue.isEmpty) {
-        Corpus.readCorpusInputStack(corpusPath, workQueue)
+        corpus.readCorpus(workQueue)
 
         val drain = new java.util.ArrayList[(Array[Byte], String)]()
         workQueue.drainTo(drain)
@@ -149,14 +153,14 @@ class Fuzzer(corpusPath : String = "corpus",
         val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
 
         if (result == FuzzResult.FAILED) {
-          Corpus.saveResult(old._1, false, ex, corpusPath, failedPath)
+          corpus.saveResult(old._1, false, ex)
         }
 
         if (result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)) {
           coverageSet.put(hash, obj)
 
           if (FuzzResult.Passed(result)) {
-            Corpus.saveResult(old._1, true, ex, corpusPath, failedPath) // only save on success, it would have been saved already on fail
+            corpus.saveResult(old._1, true, ex) // only save on success, it would have been saved already on fail
           }
 
           val newInput = mutator.mutate(old._1)
@@ -179,7 +183,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
     try {
 
-      implicit val context = ExecutionContext.global
+      implicit val context : ExecutionContext = ExecutionContext.global
       Await.result(Future {
         try {
           val result = targetInstance.test(input)

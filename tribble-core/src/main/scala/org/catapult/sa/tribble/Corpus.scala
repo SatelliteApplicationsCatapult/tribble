@@ -15,9 +15,21 @@ import scala.collection.mutable
 /**
   * Functions for dealing with the corpus of inputs and outputs
   */
-object Corpus {
+abstract class Corpus {
+  def validate() : Boolean
 
-  def validateDirectories(corpusPath : String, failedPath : String): Boolean = {
+  def readCorpus(stack: BlockingQueue[(Array[Byte], String)]): Unit
+
+  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable]) : Unit
+}
+
+/**
+  * File system based corpus.
+  * @param corpusPath the directory path to the corpus
+  * @param failedPath the directory path where to put the failed files.
+  */
+class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus {
+  def validate(): Boolean = {
     val corpusFile = new File(corpusPath)
     if (corpusFile.exists() && (!corpusFile.isDirectory || !corpusFile.canWrite)) {
       println("ERROR: corpus path exists but is not a directory or not writable: " + corpusFile.getAbsolutePath)
@@ -51,7 +63,7 @@ object Corpus {
 
   private val lock = new Object()
 
-  def readCorpusInputStack(corpusPath : String, stack: BlockingQueue[(Array[Byte], String)]): Unit = {
+  def readCorpus(stack: BlockingQueue[(Array[Byte], String)]): Unit = {
     if (stack.isEmpty) {
       lock.synchronized {
         if (stack.isEmpty) {
@@ -75,7 +87,7 @@ object Corpus {
   private val corpus : mutable.ArrayBuffer[(Array[Byte], String)] = mutable.ArrayBuffer.empty
 
 
-  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable], corpusPath : String, failedPath : String): Unit = {
+  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable]): Unit = {
 
 
     val filename = if(!success) {
@@ -92,7 +104,7 @@ object Corpus {
 
     if (!success) { // failed, record it in the crashers. But don't keep it for mutations.
       if (! Files.exists(Paths.get(s"$failedPath/$filename.failed"))) {
-        Corpus.saveArray(input, s"$failedPath/$filename.failed")
+        saveArray(input, s"$failedPath/$filename.failed")
 
         ex.foreach(e => {
           val exOut = new PrintStream(new FileOutputStream(s"$failedPath/$filename.stacktrace"))
@@ -102,7 +114,7 @@ object Corpus {
         })
       }
     } else { // new and didn't fail so add it to our corpus
-      Corpus.saveArray(input, s"$corpusPath/$filename.input")
+      saveArray(input, s"$corpusPath/$filename.input")
       corpus.append(input -> "Corpus")
     }
   }
@@ -142,6 +154,5 @@ object Corpus {
     IOUtils.write("", f , StandardCharsets.UTF_8)
     f.close()
   }
-
 
 }
