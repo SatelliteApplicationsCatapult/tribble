@@ -5,6 +5,7 @@ import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
 import org.apache.commons.lang.StringUtils
+import org.catapult.sa.tribble.stats.{Stats, StatsRender, StdErrStatsRender}
 
 import scala.collection.JavaConverters._
 import scala.collection.convert.WrapAsScala.asScalaBuffer
@@ -33,6 +34,9 @@ class Fuzzer(corpusPath : String = "corpus",
   // HDFS/Database etc wait until these are needed.
   // In-Memory for tests
   val corpus : Corpus = new FileSystemCorpus(corpusPath, failedPath)
+
+  // TODO: Other stats tracking options here.
+  val statsRender : StatsRender = new StdErrStatsRender()
 
   private val countDown = if (iterationCount > 0)  {
     new AtomicLong(iterationCount)
@@ -79,7 +83,8 @@ class Fuzzer(corpusPath : String = "corpus",
 
     while(futures.exists(!_.isDone)) {
       pool.awaitTermination(5, TimeUnit.SECONDS)
-      System.err.println(stats.getStats(printDetailedStats))
+      val current = stats.getStats(printDetailedStats)
+      statsRender.render(current)
     }
 
     val fails = futures.filter(_.get().isInstanceOf[Throwable])
@@ -153,14 +158,14 @@ class Fuzzer(corpusPath : String = "corpus",
         val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
 
         if (result == FuzzResult.FAILED) {
-          corpus.saveResult(old._1, false, ex)
+          corpus.saveResult(old._1, success = false, ex)
         }
 
         if (result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)) {
           coverageSet.put(hash, obj)
 
           if (FuzzResult.Passed(result)) {
-            corpus.saveResult(old._1, true, ex) // only save on success, it would have been saved already on fail
+            corpus.saveResult(old._1, success = true, ex) // only save on success, it would have been saved already on fail
           }
 
           val newInput = mutator.mutate(old._1)
