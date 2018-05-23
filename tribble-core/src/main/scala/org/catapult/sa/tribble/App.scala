@@ -55,10 +55,6 @@ object App extends Arguments {
       return
     }*/
 
-    if (! Corpus.validateDirectories(arguments(CORPUS), arguments(FAILED))) {
-      return
-    }
-
     val fuzzer = new Fuzzer(
       arguments(CORPUS),
       arguments(FAILED),

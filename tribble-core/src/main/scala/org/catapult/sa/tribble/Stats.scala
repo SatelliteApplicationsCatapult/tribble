@@ -90,7 +90,7 @@ case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int,
     val mutatorText = if (printDetailedStats) {
       val mutatorStats = mutators.map { a =>
         val ratio = a._2._1.toDouble / a._2._2.toDouble
-        s"${a._1},${a._2._1},${a._2._2},${ratio}"
+        s"${a._1},${a._2._1},${a._2._2},$ratio"
       }.mkString("\n")
       val mutatorHeader = "mutator,paths,runs,ratio"
       s"\n$mutatorHeader\n$mutatorStats"
