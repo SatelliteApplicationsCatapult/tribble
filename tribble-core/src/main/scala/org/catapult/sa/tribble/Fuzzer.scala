@@ -21,7 +21,7 @@ import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
 import org.apache.commons.lang.StringUtils
-import org.catapult.sa.tribble.stats.{Stats, StatsRender, StdErrStatsRender}
+import org.catapult.sa.tribble.stats._
 
 import scala.collection.JavaConverters._
 import scala.collection.convert.WrapAsScala.asScalaBuffer
@@ -51,9 +51,6 @@ class Fuzzer(corpusPath : String = "corpus",
   // In-Memory for tests
   val corpus : Corpus = new FileSystemCorpus(corpusPath, failedPath)
 
-  // TODO: Other stats tracking options here.
-  val statsRender : StatsRender = new StdErrStatsRender()
-
   private val countDown = if (iterationCount > 0)  {
     new AtomicLong(iterationCount)
   } else {
@@ -66,9 +63,11 @@ class Fuzzer(corpusPath : String = "corpus",
       return
     }
 
-    val coverageSet = new ConcurrentHashMap[String, Object]()
+    // TODO: Selection of chosen stats package.
+    // Should this be passed in? builder type for Fuzzer or something.
+    val stats = new DefaultStats(printDetailedStats)
 
-    val stats = new Stats()
+    val coverageSet = new ConcurrentHashMap[String, Object]()
 
     val workStack = new LinkedBlockingQueue[(Array[Byte], String)]()
     workStack.put((Array[Byte](), "Initial Value")) // first time through always try with an empty array just in case the corpus is empty
@@ -99,8 +98,7 @@ class Fuzzer(corpusPath : String = "corpus",
 
     while(futures.exists(!_.isDone)) {
       pool.awaitTermination(5, TimeUnit.SECONDS)
-      val current = stats.getStats(printDetailedStats)
-      statsRender.render(current)
+      stats.render()
     }
 
     val fails = futures.filter(_.get().isInstanceOf[Throwable])
@@ -110,10 +108,10 @@ class Fuzzer(corpusPath : String = "corpus",
 
   }
 
-  private def fuzzLoop(targetName : String,
+  private def fuzzLoop[T <: RunDetails](targetName : String,
                        coverageSet : ConcurrentHashMap[String, Object],
                        workQueue : BlockingQueue[(Array[Byte], String)],
-                       stats : Stats,
+                       stats : Stats[T],
                        parent : ClassLoader): Unit = {
 
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler {
@@ -154,9 +152,8 @@ class Fuzzer(corpusPath : String = "corpus",
       val old = workQueue.poll()
       if (old != null) { // possible race condition between the last two lines. Go around again if it happens. Scala has no continue keyword
 
-        val start = System.currentTimeMillis()
+        val start : T = stats.startRun()
         val (result, hash, ex) = runOnce(targetClass, old._1, memoryClassLoader)
-        val totalTime = System.currentTimeMillis() - start
 
         // If we had an error and its an out of memory error.
         // Kill off the class and the classloader. Manually GC and then recreate the classloader.
@@ -171,13 +168,18 @@ class Fuzzer(corpusPath : String = "corpus",
           targetClass = newTargetClass
         }
 
-        val wasTimeout = ex.exists(_.isInstanceOf[TimeoutException])
+        start.mutator = old._2
+        start.success = FuzzResult.Passed(result)
+        start.timeout = ex.exists(_.isInstanceOf[TimeoutException])
+        start.newPath = result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)
+        // done here as this stops the timing and we don't care about the time taken to write the corpus entries.
+        stats.finishRun(start)
 
         if (result == FuzzResult.FAILED) {
           corpus.saveResult(old._1, success = false, ex)
         }
 
-        if (result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)) {
+        if (start.newPath) {
           coverageSet.put(hash, obj)
 
           if (FuzzResult.Passed(result)) {
@@ -186,10 +188,9 @@ class Fuzzer(corpusPath : String = "corpus",
 
           val newInput = mutator.mutate(old._1)
           workQueue.put(newInput)
-          stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = true, totalTime, old._2)
-        } else {
-          stats.addRun(success = FuzzResult.Passed(result), timeout = wasTimeout, newPath = false, totalTime, old._2)
+          start.newPath = true
         }
+
       }
     }
 
