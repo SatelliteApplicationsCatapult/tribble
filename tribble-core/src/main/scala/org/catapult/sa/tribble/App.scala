@@ -71,16 +71,15 @@ object App extends Arguments {
       return
     }*/
 
-    val fuzzer = new Fuzzer(
-      arguments(CORPUS),
-      arguments(FAILED),
-      arguments(IGNORECLASSES).split(","),
-      arguments(THREAD_COUNT).toInt,
-      arguments(TIMEOUT).toLong,
-      arguments(COUNT).toLong,
-      arguments(VERBOSE).toBoolean,
-      arguments(DISABLED).split(",")
-    )
+    val fuzzer = new FuzzerFactory()
+      .defaultStats(arguments(VERBOSE).toBoolean)
+      .fileSystemCorpus(arguments(CORPUS), arguments(FAILED))
+      .threads(arguments(THREAD_COUNT).toInt)
+      .iterations(arguments(COUNT).toLong)
+      .timeout(arguments(TIMEOUT).toLong)
+      .disable(arguments(DISABLED).split(","):_*)
+      .ignore(arguments(IGNORECLASSES).split(","):_*)
+      .build()
 
     fuzzer.run(arguments(TARGET_CLASS), getClass.getClassLoader)
   }

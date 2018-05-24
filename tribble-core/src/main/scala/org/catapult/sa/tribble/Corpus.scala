@@ -45,7 +45,7 @@ abstract class Corpus {
   * @param failedPath the directory path where to put the failed files.
   */
 class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus {
-  def validate(): Boolean = {
+  override def validate(): Boolean = {
     val corpusFile = new File(corpusPath)
     if (corpusFile.exists() && (!corpusFile.isDirectory || !corpusFile.canWrite)) {
       println("ERROR: corpus path exists but is not a directory or not writable: " + corpusFile.getAbsolutePath)
@@ -79,7 +79,7 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
 
   private val lock = new Object()
 
-  def readCorpus(stack: BlockingQueue[(Array[Byte], String)]): Unit = {
+  override def readCorpus(stack: BlockingQueue[(Array[Byte], String)]): Unit = {
     if (stack.isEmpty) {
       lock.synchronized {
         if (stack.isEmpty) {
@@ -103,8 +103,7 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
   private val corpus : mutable.ArrayBuffer[(Array[Byte], String)] = mutable.ArrayBuffer.empty
 
 
-  def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable]): Unit = {
-
+  override def saveResult(input: Array[Byte], success: Boolean, ex: Option[Throwable]): Unit = {
 
     val filename = if(!success) {
       ex match {

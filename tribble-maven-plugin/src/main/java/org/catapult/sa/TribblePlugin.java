@@ -22,6 +22,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.catapult.sa.tribble.Fuzzer;
+import org.catapult.sa.tribble.FuzzerFactory;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -97,7 +98,16 @@ public class TribblePlugin extends AbstractMojo {
 
             Thread.currentThread().setContextClassLoader(projectRealm);
 
-            Fuzzer fuzzer = new Fuzzer(corpusPath, failedPath, ignoreClasses, threads, timeout, count, verbose, disabledMutators);
+            Fuzzer fuzzer = new FuzzerFactory()
+                .defaultStats(verbose)
+                .fileSystemCorpus(corpusPath, failedPath)
+                .ignore(ignoreClasses)
+                .threads(threads)
+                .timeout(timeout)
+                .iterations(count)
+                .disable(disabledMutators)
+                .build();
+
             fuzzer.run(target, projectRealm);
 
         } catch (DuplicateRealmException | MalformedURLException e) {
