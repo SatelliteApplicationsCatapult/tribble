@@ -25,31 +25,25 @@ import org.catapult.sa.tribble.stats._
 
 import scala.collection.JavaConverters._
 import scala.collection.convert.WrapAsScala.asScalaBuffer
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 
 
 /**
   * Main implementation of fuzzing logic.
   */
-class Fuzzer(corpusPath : String = "corpus",
-             failedPath : String = "failed",
+class Fuzzer(corpus : Corpus,
+             stats : Stats[_ <: RunDetails],
              ignoreClasses : Array[String] = Array(),
              threadCount : Int = 2,
              timeout : Long = 1000L,
              iterationCount : Long = -1,
-             printDetailedStats: Boolean = true,
-             disabledMutators: Array[String] = Array()) {
+             disabledMutators : Array[String] = Array()) {
 
   val rand = new Random()
   // TODO: argument for seed? Pretty sure this isn't needed with the saving of inputs and stacktraces.
   rand.setSeed(System.currentTimeMillis())
-
-  // TODO: other options here.
-  // HDFS/Database etc wait until these are needed.
-  // In-Memory for tests
-  val corpus : Corpus = new FileSystemCorpus(corpusPath, failedPath)
 
   private val countDown = if (iterationCount > 0)  {
     new AtomicLong(iterationCount)
@@ -62,10 +56,6 @@ class Fuzzer(corpusPath : String = "corpus",
     if (!corpus.validate()) {
       return
     }
-
-    // TODO: Selection of chosen stats package.
-    // Should this be passed in? builder type for Fuzzer or something.
-    val stats = new DefaultStats(printDetailedStats)
 
     val coverageSet = new ConcurrentHashMap[String, Object]()
 
