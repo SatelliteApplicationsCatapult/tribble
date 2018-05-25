@@ -16,7 +16,7 @@
 
 package org.catapult.sa.tribble
 
-import org.catapult.sa.tribble.stats.{DefaultStats, RunDetails, Stats}
+import org.catapult.sa.tribble.stats.{ConsoleStats, RunDetails, Stats}
 
 class FuzzerFactory {
 
@@ -72,7 +72,7 @@ class FuzzerFactory {
 
   // TODO: Add different types of stats creation here
   def defaultStats(details : Boolean) : FuzzerFactory = {
-    statsClass = new DefaultStats(details)
+    statsClass = new ConsoleStats(details)
     this
   }
 
