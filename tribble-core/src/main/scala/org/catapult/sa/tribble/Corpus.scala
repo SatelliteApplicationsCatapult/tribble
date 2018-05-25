@@ -144,7 +144,7 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
     if (!new File(fileName).exists()) {
       val stream = new FileOutputStream(fileName)
       IOUtils.write(input, stream)
-      IOUtils.closeQuietly(stream)
+      stream.close()
     }
   }
 
@@ -160,7 +160,7 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
     } else {
       IOUtils.toByteArray(stream)
     }
-    IOUtils.closeQuietly(stream)
+    stream.close()
     result
   }
 

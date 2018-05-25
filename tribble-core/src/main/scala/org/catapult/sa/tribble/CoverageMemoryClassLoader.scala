@@ -61,7 +61,7 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
       classBlobs.put(name, fileContent)
       instr.instrument(fileContent, name)
     } finally {
-      IOUtils.closeQuietly(classFile)
+      classFile.close()
     }
   }
 
