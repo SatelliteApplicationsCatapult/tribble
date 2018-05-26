@@ -160,6 +160,7 @@ class Fuzzer(corpus : Corpus,
 
         start.mutator = old._2
         start.success = FuzzResult.Passed(result)
+        start.ignored = result == FuzzResult.IGNORE
         start.timeout = ex.exists(_.isInstanceOf[TimeoutException])
         start.newPath = result != FuzzResult.IGNORE && (!coverageSet.containsKey(hash) || result == FuzzResult.INTERESTING)
         // done here as this stops the timing and we don't care about the time taken to write the corpus entries.
