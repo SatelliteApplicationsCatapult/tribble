@@ -30,4 +30,4 @@ abstract class Stats[T <: RunDetails] {
 }
 
 
-class RunDetails(var success : Boolean = false, var timeout : Boolean = false, var newPath : Boolean = false, var mutator : String = "")
+class RunDetails(var success : Boolean = false, var ignored : Boolean = false, var timeout : Boolean = false, var newPath : Boolean = false, var mutator : String = "")

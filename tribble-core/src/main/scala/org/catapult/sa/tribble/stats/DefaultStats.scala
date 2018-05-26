@@ -26,6 +26,7 @@ class DefaultStats(printDetailedStats : Boolean) extends Stats[DefaultRunDetails
 
   private val runs  = new AtomicLong(0)
   private val fails = new AtomicLong(0)
+  private val ignored = new AtomicLong(0)
   private val timeouts = new AtomicLong(0)
   private val paths = new AtomicInteger(0)
   private val totalTime = new AtomicLong(0)
@@ -47,6 +48,8 @@ class DefaultStats(printDetailedStats : Boolean) extends Stats[DefaultRunDetails
     if (!start.success) {
       if (start.timeout) {
         timeouts.incrementAndGet()
+      } else if (start.ignored) {
+        ignored.incrementAndGet()
       } else {
         fails.incrementAndGet()
       }
@@ -100,12 +103,12 @@ class DefaultStats(printDetailedStats : Boolean) extends Stats[DefaultRunDetails
     } else {
       Map.empty[String,(Long, Long)]
     }
-    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), tt, avg, minTime.get(), maxTime.get(), m, printDetailedStats)
+    CurrentStats(r, fails.get(), timeouts.get(), paths.get(), ignored.get(), tt, avg, minTime.get(), maxTime.get(), m, printDetailedStats)
   }
 
 }
 
-case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long, mutators : Map[String, (Long, Long)], printDetailedStats : Boolean) {
+case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int, ignore : Long, totalTime : Long, averageTime : Long, minTime : Long, maxTime : Long, mutators : Map[String, (Long, Long)], printDetailedStats : Boolean) {
   override def toString: String = {
     val t = CurrentStats.formatDuration(totalTime)
     val a = CurrentStats.formatDuration(averageTime)
@@ -123,7 +126,7 @@ case class CurrentStats(runs : Long, fails : Long, timeouts : Long, paths : Int,
       ""
     }
 
-    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths total time: $t average time: $a min time: $min max time: $max$mutatorText"
+    s"runs: $runs fails: $fails timeouts: $timeouts paths: $paths ignored: $ignore total time: $t average time: $a min time: $min max time: $max$mutatorText"
   }
 }
 
