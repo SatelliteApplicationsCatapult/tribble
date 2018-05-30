@@ -46,20 +46,10 @@ repositories {
 
 dependencies {
     compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
-    compile ("org.apache.maven:maven-core:$mavenVersion"){
-        exclude group: 'org.ow2.asm'
-    }
-    compile ("org.apache.maven:maven-plugin-api:$mavenVersion"){
-        exclude group: 'org.ow2.asm'
-    }
-    compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2") {
-        exclude group: 'org.ow2.asm'
-    }
-    compile 'org.ow2.asm:asm:6.1.1'
-    compile 'org.ow2.asm:asm-analysis:6.1.1'
-    compile 'org.ow2.asm:asm-commons:6.1.1'
-    compile 'org.ow2.asm:asm-tree:6.1.1'
-    compile 'org.ow2.asm:asm-util:6.1.1'
+    compile ("org.apache.maven:maven-core:$mavenVersion")
+    compile ("org.apache.maven:maven-plugin-api:$mavenVersion")
+    compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")
+
 
     compile project(path: ':tribble-core', configuration: 'shadow')
 }
@@ -90,7 +80,6 @@ task createPom() {
                     'project.build.sourceEncoding' 'UTF-8'
                 }
 
-
             }
         }.withXml {
             asNode().appendNode('build')
@@ -98,6 +87,10 @@ task createPom() {
                 appendNode('directory', pd + pack)
                 appendNode('outputDirectory', bd)
             }
+        }.whenConfigured { pom ->
+            def t = pom.dependencies.find {dep -> dep.groupId == 'org.catapult.sa' && dep.artifactId == 'tribble-core'}
+            t.scope = "runtime"
+            t.type = "jar"
         }
 
         println("project path: ${project.sourceSets.main.java.srcDirs}")
