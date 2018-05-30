@@ -30,7 +30,9 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    compile project(':tribble-core')
+    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+
+    compile project(path: ':tribble-core', configuration: 'shadow')
 }
 
 

@@ -30,5 +30,6 @@ ext.junitVersion = '4.12'
 ext.mockitoVersion = '2.18.3'
 ext.asmVersion = '6.2'
 ext.bintrayVersion = '1.8.0'
+ext.shadowVersion = '2.0.4'
 
 

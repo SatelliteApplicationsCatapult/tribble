@@ -141,8 +141,9 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
   }
 
   private def saveArray(input: Array[Byte], fileName: String): Unit = {
-    if (!new File(fileName).exists()) {
-      val stream = new FileOutputStream(fileName)
+    val f = new File(fileName)
+    if (!f.exists()) {
+      val stream = new FileOutputStream(f)
       IOUtils.write(input, stream)
       stream.close()
     }

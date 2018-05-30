@@ -45,6 +45,7 @@ repositories {
 
 
 dependencies {
+    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
     compile ("org.apache.maven:maven-core:$mavenVersion"){
         exclude group: 'org.ow2.asm'
     }
@@ -60,7 +61,7 @@ dependencies {
     compile 'org.ow2.asm:asm-tree:6.1.1'
     compile 'org.ow2.asm:asm-util:6.1.1'
 
-    compile project(':tribble-core')
+    compile project(path: ':tribble-core', configuration: 'shadow')
 }
 
 // to create the maven plugin we need to create a pom first and then use that

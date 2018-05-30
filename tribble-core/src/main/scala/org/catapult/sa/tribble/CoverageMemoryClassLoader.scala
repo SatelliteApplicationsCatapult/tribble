@@ -48,7 +48,7 @@ class CoverageMemoryClassLoader(val parent : ClassLoader) extends ClassLoader(pa
   private val instr = new Instrumenter(runtime)
 
   private val ignores = new mutable.ArrayBuffer[String](5)
-  ignores.append("java.", "javax.", "sun.", "org.jacoco.", "org.catapult.sa.tribble.")
+  ignores.append("java.", "javax.", "jdk.", "sun.", "org.jacoco.", "org.catapult.sa.tribble.")
 
   /**
     * Pre load a class into this classloader

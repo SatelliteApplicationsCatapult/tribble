@@ -23,13 +23,16 @@ buildscript {
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
+        classpath "com.github.jengelman.gradle.plugins:shadow:${rootProject.shadowVersion}"
     }
 }
 
+apply plugin : 'java'
 apply plugin : 'scala'
 apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
+apply plugin : 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
 repositories {
@@ -54,6 +57,23 @@ dependencies {
     testCompile "org.mockito:mockito-core:${rootProject.mockitoVersion}"
 }
 
+shadowJar {
+    classifier = 'shadow'
+    // configurations = [project.configurations.compile]
+    relocate 'org.objectweb.asm', 'tribbleshadow.org.objectweb.asm'
+    relocate 'org.jacoco', 'tribbleshadow.org.jacoco'
+    relocate 'org.apache.commons.io', 'tribbleshadow.org.apache.commons.io'
+    relocate 'org.apache.commons.lang', 'tribbleshadow.org.apache.commons.lang'
+
+    dependencies {
+        include(dependency("org.ow2.asm:.*"))
+        include(dependency("org.jacoco:.*"))
+        include(dependency("commons-io:.*"))
+        include(dependency("commons-lang:.*"))
+    }
+}
+
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
@@ -67,6 +87,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+    archives shadowJar
 }
 
 bintray {
@@ -94,6 +115,9 @@ publishing {
             artifactId project.name
             version project.version
 
+        }
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
         }
     }
 }
