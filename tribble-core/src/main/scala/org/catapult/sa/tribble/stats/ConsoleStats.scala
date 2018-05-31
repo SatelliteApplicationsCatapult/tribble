@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import scala.collection.mutable
 
-case class DefaultRunDetails(startTime : Long) extends RunDetails
+case class ConsoleRunDetails(startTime : Long) extends RunDetails
 
-class DefaultStats(printDetailedStats : Boolean) extends Stats[DefaultRunDetails] {
+class ConsoleStats(printDetailedStats : Boolean) extends Stats[ConsoleRunDetails] {
 
   private val runs  = new AtomicLong(0)
   private val fails = new AtomicLong(0)
@@ -34,13 +34,13 @@ class DefaultStats(printDetailedStats : Boolean) extends Stats[DefaultRunDetails
   private val minTime = new AtomicLong(Long.MaxValue)
   private val maxTime = new AtomicLong(Long.MinValue)
 
-  override def startRun(): DefaultRunDetails = {
-    DefaultRunDetails(
+  override def startRun(): ConsoleRunDetails = {
+    ConsoleRunDetails(
       startTime = System.currentTimeMillis()
     )
   }
 
-  override def finishRun(start: DefaultRunDetails): Unit = {
+  override def finishRun(start: ConsoleRunDetails): Unit = {
 
     val time = System.currentTimeMillis() - start.startTime
 

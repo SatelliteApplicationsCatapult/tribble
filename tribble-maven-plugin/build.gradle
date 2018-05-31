@@ -22,7 +22,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
     }
 }
 
@@ -31,7 +31,7 @@ apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
 
-ext.mavenVersion = '3.3.9'
+ext.mavenVersion = '3.5.3'
 if (System.properties['mvnpath']) {
     ext.mavenPath = System.properties['mvnpath'].toString()
 } else {
@@ -45,11 +45,13 @@ repositories {
 
 
 dependencies {
-    compile "org.apache.maven:maven-core:$mavenVersion"
-    compile "org.apache.maven:maven-plugin-api:$mavenVersion"
-    compile "org.apache.maven.plugin-tools:maven-plugin-annotations:3.4"
+    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+    compile ("org.apache.maven:maven-core:$mavenVersion")
+    compile ("org.apache.maven:maven-plugin-api:$mavenVersion")
+    compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")
 
-    compile project(':tribble-core')
+
+    compile project(path: ':tribble-core', configuration: 'shadow')
 }
 
 // to create the maven plugin we need to create a pom first and then use that
@@ -74,6 +76,9 @@ task createPom() {
                         distribution 'repo'
                     }
                 }
+                properties {
+                    'project.build.sourceEncoding' 'UTF-8'
+                }
 
             }
         }.withXml {
@@ -82,6 +87,10 @@ task createPom() {
                 appendNode('directory', pd + pack)
                 appendNode('outputDirectory', bd)
             }
+        }.whenConfigured { pom ->
+            def t = pom.dependencies.find {dep -> dep.groupId == 'org.catapult.sa' && dep.artifactId == 'tribble-core'}
+            t.scope = "runtime"
+            t.type = "jar"
         }
 
         println("project path: ${project.sourceSets.main.java.srcDirs}")
@@ -96,7 +105,7 @@ task pluginDescriptor( type: Exec ) {
 
     environment("JAVA_HOME", "${System.properties.'java.home'}")
 
-    commandLine mavenPath, '-e', '-B', '--file', "${buildDir.canonicalPath}/pom.xml", 'org.apache.maven.plugins:maven-plugin-plugin:3.3:descriptor'
+    commandLine mavenPath, '-e', '-B', '--file', "${buildDir.canonicalPath}/pom.xml", 'org.apache.maven.plugins:maven-plugin-plugin:3.5:descriptor'
     doFirst {
         final File pom = project.file("${buildDir.canonicalPath}/pom.xml")
 

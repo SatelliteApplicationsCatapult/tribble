@@ -22,14 +22,17 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
+        classpath "com.github.jengelman.gradle.plugins:shadow:${rootProject.shadowVersion}"
     }
 }
 
+apply plugin : 'java'
 apply plugin : 'scala'
 apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
+apply plugin : 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
 repositories {
@@ -40,13 +43,36 @@ repositories {
 dependencies {
     compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
 
-    compile "commons-io:commons-io:2.5"
-    compile "commons-lang:commons-lang:2.6"
-    compile "org.jacoco:org.jacoco.core:0.7.9"
+    compile "commons-io:commons-io:${rootProject.commonsIOVersion}"
+    compile "commons-lang:commons-lang:${rootProject.commonsLangVersion}"
+    compile "org.jacoco:org.jacoco.core:${rootProject.jacocoVersion}"
 
-    testCompile "junit:junit:4.4"
-    testCompile "org.mockito:mockito-core:2.8.9"
+    compile "org.ow2.asm:asm:${rootProject.asmVersion}"
+    compile "org.ow2.asm:asm-analysis:${rootProject.asmVersion}"
+    compile "org.ow2.asm:asm-commons:${rootProject.asmVersion}"
+    compile "org.ow2.asm:asm-tree:${rootProject.asmVersion}"
+    compile "org.ow2.asm:asm-util:${rootProject.asmVersion}"
+
+    testCompile "junit:junit:${rootProject.junitVersion}"
+    testCompile "org.mockito:mockito-core:${rootProject.mockitoVersion}"
 }
+
+shadowJar {
+    classifier = 'shadow'
+    // configurations = [project.configurations.compile]
+    relocate 'org.objectweb.asm', 'tribbleshadow.org.objectweb.asm'
+    relocate 'org.jacoco', 'tribbleshadow.org.jacoco'
+    relocate 'org.apache.commons.io', 'tribbleshadow.org.apache.commons.io'
+    relocate 'org.apache.commons.lang', 'tribbleshadow.org.apache.commons.lang'
+
+    dependencies {
+        include(dependency("org.ow2.asm:.*"))
+        include(dependency("org.jacoco:.*"))
+        include(dependency("commons-io:.*"))
+        include(dependency("commons-lang:.*"))
+    }
+}
+
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -61,6 +87,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+    archives shadowJar
 }
 
 bintray {
@@ -88,6 +115,9 @@ publishing {
             artifactId project.name
             version project.version
 
+        }
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
         }
     }
 }

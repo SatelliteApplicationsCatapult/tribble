@@ -5,12 +5,12 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.{scala,java,gradle}]
+[*.{scala,java,gradle,groovy}]
 charset = utf-8
 indent_style = space
 
 [*.scala]
 indent_size = 2
 
-[*.{java,gradle}]
+[*.{java,gradle,groovy}]
 indent_size = 4
