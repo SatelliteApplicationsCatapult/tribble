@@ -22,14 +22,18 @@ plugins {
 group 'org.catapult.sa'
 version '0.7-SNAPSHOT'
 
+// dependency versions
 ext.scalaVersion = '2.11.7'
 ext.jacocoVersion = '0.8.1'
+ext.asmVersion = '6.2'
 ext.commonsIOVersion = '2.6'
 ext.commonsLangVersion = '2.6'
+
+// test dependency versions
 ext.junitVersion = '4.12'
 ext.mockitoVersion = '2.18.3'
-ext.asmVersion = '6.2'
+
+// gradle plug in versions
 ext.bintrayVersion = '1.8.0'
 ext.shadowVersion = '2.0.4'
-
 

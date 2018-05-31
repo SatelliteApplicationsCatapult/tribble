@@ -55,12 +55,30 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 </plugin>
 ```
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. This class should return
-a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class can be 
+a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class should be 
 in the `src/test` tree
 * Configure the target class name in the plugin.
 * Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
 your application. The more the merrier.
 * Run `mvn tribble:fuzztest` to start a run.
+
+### SBT
+* add Jcenter to dependency resolvers 
+```scala
+resolvers += Resolver.jcenterRepo
+```
+* add dependency 
+```scala
+"org.catapult.sa" % "tribble-core" % "0.6" % "test"
+```
+* Create a class that implements `FuzzTest` which will run a single test case with the provided data. This class should return
+a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class should be 
+in the `src/test` tree
+* Configure the target class name in the plugin.
+* Create a folder called `corpus` and populate it with an initial set of inputs that will exercise different functions in 
+your application. The more the merrier.
+* Run `sbt test:runMain org.catapult.sa.tribble.App -targetClass <Path to your target class>` to start a run. See the section
+with command line parameters for more options.
 
 ### Command Line
 * Include this library in your project.
