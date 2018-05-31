@@ -7,8 +7,6 @@ Heavily based on the wonderful GoFuzz and AFL.
 
 It uses Jacoco to get coverage stats and has a maven plug for running.
 
-## TOC
-
 * [Usage](#usage)
   * [Maven](#maven)
   * [SBT](#sbt)
@@ -81,7 +79,7 @@ your application. The more the merrier.
 * Run `mvn tribble:fuzztest` to start a run.
 
 ### SBT
-* add Jcenter to dependency resolvers 
+* add JCenter to dependency resolvers 
 ```scala
 resolvers += Resolver.jcenterRepo
 ```
@@ -176,9 +174,9 @@ command line.
 | count | --count | number of iterations to run. Number greater than zero for a limit | -1 |
 | verbose | --verbose | Should verbose mutator stats be printed. | false |
 | ignoreClasses | | List of class prefixes e.g `org.apache.hadoop.` to ignore from coverage. This is useful if you find some classes are already loaded. | |
-| | --ignoreClasses | Comma Seperated list of class prefixes to ignore.  e.g `org.apache.hadoop.` | |
+| | --ignoreClasses | Comma Separated list of class prefixes to ignore.  e.g `org.apache.hadoop.` | |
 | disabledMutators | | List of mutator class names to disable | |
-| | --disabledMutations | Comma seperated list of mutators to disable | |
+| | --disabledMutations | Comma separated list of mutators to disable | |
 
 ## Design goals:
 1) Easy to use and setup
