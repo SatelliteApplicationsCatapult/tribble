@@ -7,6 +7,24 @@ Heavily based on the wonderful GoFuzz and AFL.
 
 It uses Jacoco to get coverage stats and has a maven plug for running.
 
+## TOC
+
+* [Usage](#usage)
+  * [Maven](#maven)
+  * [SBT](#sbt)
+  * [Command line](#command-line)
+  * [Example](#example-test-class)
+  * [General](#general-usage)
+* [Why](#why)
+  * [What is fuzz testing?](#what-is-fuzz-testing)
+  * [Why the name Tribble?](#why-the-name-tribble)
+* [Settings](#advanced-settings)
+* [Design Goals](#design-goals)
+* [Where Next?](#where-next)
+* [Contributing](#contributing)
+* [Contributors](#contributors)
+* [Thanks](#thanks)
+
 ## Usage
 
 ### Maven
