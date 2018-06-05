@@ -20,9 +20,11 @@ version rootProject.version
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
+        classpath "com.adtran:scala-multiversion-plugin:1.+"
     }
 }
 
@@ -30,6 +32,7 @@ apply plugin : 'java'
 apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
+apply plugin : 'com.adtran.scala-multiversion-plugin'
 
 ext.mavenVersion = '3.5.3'
 if (System.properties['mvnpath']) {
@@ -45,7 +48,7 @@ repositories {
 
 
 dependencies {
-    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+    compile "org.scala-lang:scala-library:$scalaVersion"
     compile ("org.apache.maven:maven-core:$mavenVersion")
     compile ("org.apache.maven:maven-plugin-api:$mavenVersion")
     compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")

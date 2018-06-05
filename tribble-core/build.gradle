@@ -20,10 +20,12 @@ version rootProject.version
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
         classpath "com.github.jengelman.gradle.plugins:shadow:${rootProject.shadowVersion}"
+        classpath "com.adtran:scala-multiversion-plugin:1.+"
     }
 }
 
@@ -33,15 +35,15 @@ apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
 apply plugin : 'com.github.johnrengelman.shadow'
+apply plugin : "com.adtran.scala-multiversion-plugin"
 
 sourceCompatibility = 1.8
 repositories {
     jcenter()
 }
 
-
 dependencies {
-    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+    compile "org.scala-lang:scala-library:%scala-version%"
 
     compile "commons-io:commons-io:${rootProject.commonsIOVersion}"
     compile "commons-lang:commons-lang:${rootProject.commonsLangVersion}"
@@ -66,10 +68,10 @@ shadowJar {
     relocate 'org.apache.commons.lang', 'tribbleshadow.org.apache.commons.lang'
 
     dependencies {
-        include(dependency("org.ow2.asm:.*"))
-        include(dependency("org.jacoco:.*"))
-        include(dependency("commons-io:.*"))
-        include(dependency("commons-lang:.*"))
+        include dependency("org.ow2.asm:.*")
+        include dependency("org.jacoco:.*")
+        include dependency("commons-io:.*")
+        include dependency("commons-lang:.*")
     }
 }
 
