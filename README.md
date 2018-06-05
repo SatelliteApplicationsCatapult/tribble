@@ -54,8 +54,9 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 ```Maven POM
 <dependency>
     <groupId>org.catapult.sa</groupId>
-    <artifactId>tribble-core</artifactId>
-    <version>0.6</version>
+    <artifactId>tribble-core_2.12</artifactId>
+    <version>0.7</version>
+    <classifier>shadow</classifier>
     <scope>test</scope>
 </dependency>
 ```
@@ -63,8 +64,8 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 ```Maven POM
 <plugin>
     <groupId>org.catapult.sa</groupId>
-    <artifactId>tribble-maven-plugin</artifactId>
-    <version>0.6</version>
+    <artifactId>tribble-maven-plugin_2.12</artifactId>
+    <version>0.7</version>
     <configuration>
         <target>org.catapult.sa.testcase.TestCase</target>
     </configuration>
@@ -85,7 +86,7 @@ resolvers += Resolver.jcenterRepo
 ```
 * add dependency 
 ```scala
-"org.catapult.sa" % "tribble-core" % "0.6" % "test"
+"org.catapult.sa" % "tribble-core_2.12" % "0.7" % "test" classifier "shadow"
 ```
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. This class should return
 a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class should be 
@@ -130,6 +131,9 @@ time out on each test run.
 When creating corpus entries you can append .hex to the file name and have the file hex encoded rather than raw bytes.
  This can make it a lot easier to include non printing characters. Generated corpus entries and failed inputs will use 
  this if it finds unprintable characters in an input array.
+
+If you need a particular version of scala we provide builds against 2.12 and 2.11. Change the bit on the end of the 
+group name If you need something else edit the `gradle.properties` file and then run `./gradlew install` 
 
 ## Why?
 
