@@ -102,7 +102,7 @@ bintray {
         name = project.name
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/SatelliteApplicationsCatapult/tribble.git'
-        publications = ['tribbleCorePub']
+        publications = ['tribbleCorePub' ] //,'shadow', 'javadoc', 'sources']
         version {
             name = project.version
             released  = new Date()
@@ -118,10 +118,9 @@ publishing {
             groupId project.group
             artifactId project.name
             version project.version
-
-        }
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
+            artifact javadocJar
+            artifact sourcesJar
+            artifact shadowJar
         }
     }
 }
