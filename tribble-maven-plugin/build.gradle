@@ -19,10 +19,13 @@ version rootProject.version
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
+        classpath "com.adtran:scala-multiversion-plugin:1.+"
     }
 }
 
@@ -30,6 +33,7 @@ apply plugin : 'java'
 apply plugin : 'maven'
 apply plugin : 'maven-publish'
 apply plugin : 'com.jfrog.bintray'
+apply plugin : 'com.adtran.scala-multiversion-plugin'
 
 ext.mavenVersion = '3.5.3'
 if (System.properties['mvnpath']) {
@@ -40,18 +44,18 @@ if (System.properties['mvnpath']) {
 
 sourceCompatibility = 1.8
 repositories {
+    mavenLocal()
     jcenter()
 }
 
 
 dependencies {
-    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+    compile "org.scala-lang:scala-library:$scalaVersion"
     compile ("org.apache.maven:maven-core:$mavenVersion")
     compile ("org.apache.maven:maven-plugin-api:$mavenVersion")
     compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")
 
-
-    compile project(path: ':tribble-core', configuration: 'shadow')
+    compile project(path: ":tribble-core", configuration: 'shadow')
 }
 
 // to create the maven plugin we need to create a pom first and then use that
@@ -89,6 +93,7 @@ task createPom() {
             }
         }.whenConfigured { pom ->
             def t = pom.dependencies.find {dep -> dep.groupId == 'org.catapult.sa' && dep.artifactId == 'tribble-core'}
+            t.artifactId = t.artifactId + scalaSuffix
             t.scope = "runtime"
             t.type = "jar"
         }
@@ -101,7 +106,7 @@ task createPom() {
 }
 
 task pluginDescriptor( type: Exec ) {
-    dependsOn 'createPom', 'compileJava', ':tribble-core:install' // needs to be able to find tribble-core from inside maven
+    dependsOn 'createPom', 'compileJava', ":tribble-core:install" // needs to be able to find tribble-core from inside maven
 
     environment("JAVA_HOME", "${System.properties.'java.home'}")
 

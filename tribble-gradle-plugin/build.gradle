@@ -17,9 +17,23 @@
 group rootProject.group
 version rootProject.version
 
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${rootProject.bintrayVersion}"
+        classpath "com.github.jengelman.gradle.plugins:shadow:${rootProject.shadowVersion}"
+        classpath "com.adtran:scala-multiversion-plugin:1.+"
+    }
+}
+
 apply plugin : 'groovy'
 apply plugin : 'maven'
-
+apply plugin : 'com.adtran.scala-multiversion-plugin'
 
 sourceCompatibility = 1.8
 repositories {
@@ -30,7 +44,7 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    compile "org.scala-lang:scala-library:${rootProject.scalaVersion}"
+    compile "org.scala-lang:scala-library:%scala-version%"
 
     compile project(path: ':tribble-core', configuration: 'shadow')
 }

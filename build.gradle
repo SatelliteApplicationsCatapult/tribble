@@ -14,16 +14,20 @@
  *    limitations under the License.
  */
 
+
 plugins {
     // Versions plug in gives us a handy report of things that need updating.
     id "com.github.ben-manes.versions" version "0.17.0"
+    // Enables us to build against multiple versions of scala at the same time.
+    // See the gradle.properties file for a list of current scala versions
+    id "com.adtran.scala-multiversion-plugin" version "1.0.30"
 }
 
 group 'org.catapult.sa'
 version '0.7-SNAPSHOT'
 
+
 // dependency versions
-ext.scalaVersion = '2.11.7'
 ext.jacocoVersion = '0.8.1'
 ext.asmVersion = '6.2'
 ext.commonsIOVersion = '2.6'
