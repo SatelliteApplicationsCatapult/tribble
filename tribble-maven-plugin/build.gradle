@@ -53,8 +53,7 @@ dependencies {
     compile ("org.apache.maven:maven-plugin-api:$mavenVersion")
     compile ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")
 
-
-    compile project(path: ':tribble-core', configuration: 'shadow')
+    compile project(path: ":tribble-core", configuration: 'shadow')
 }
 
 // to create the maven plugin we need to create a pom first and then use that
