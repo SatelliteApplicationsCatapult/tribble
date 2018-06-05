@@ -15,7 +15,6 @@
  */
 
 
-
 plugins {
     // Versions plug in gives us a handy report of things that need updating.
     id "com.github.ben-manes.versions" version "0.17.0"

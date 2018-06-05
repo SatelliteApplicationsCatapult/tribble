@@ -19,6 +19,7 @@ version rootProject.version
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
     }
@@ -43,6 +44,7 @@ if (System.properties['mvnpath']) {
 
 sourceCompatibility = 1.8
 repositories {
+    mavenLocal()
     jcenter()
 }
 
@@ -91,6 +93,7 @@ task createPom() {
             }
         }.whenConfigured { pom ->
             def t = pom.dependencies.find {dep -> dep.groupId == 'org.catapult.sa' && dep.artifactId == 'tribble-core'}
+            t.artifactId = t.artifactId + scalaSuffix
             t.scope = "runtime"
             t.type = "jar"
         }
@@ -103,7 +106,7 @@ task createPom() {
 }
 
 task pluginDescriptor( type: Exec ) {
-    dependsOn 'createPom', 'compileJava', ':tribble-core:install' // needs to be able to find tribble-core from inside maven
+    dependsOn 'createPom', 'compileJava', ":tribble-core:install" // needs to be able to find tribble-core from inside maven
 
     environment("JAVA_HOME", "${System.properties.'java.home'}")
 
