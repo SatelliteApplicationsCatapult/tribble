@@ -165,6 +165,8 @@ publishing {
             groupId project.group
             artifactId project.name
             version project.version
+            artifact javadocJar
+            artifact sourcesJar
         }
     }
 }
