@@ -69,7 +69,7 @@ task createPom() {
         install.repositories.mavenInstaller.pom = pom {
             project {
                 groupId project.group
-                artifactId project.name
+                artifactId project.name + scalaSuffix
                 version project.version
                 packaging 'maven-plugin'
 
