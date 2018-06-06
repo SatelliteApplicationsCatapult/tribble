@@ -55,7 +55,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 <dependency>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-core_2.12</artifactId>
-    <version>0.7</version>
+    <version>0.7.1</version>
     <classifier>shadow</classifier>
     <scope>test</scope>
 </dependency>
@@ -65,7 +65,7 @@ It uses Jacoco to get coverage stats and has a maven plug for running.
 <plugin>
     <groupId>org.catapult.sa</groupId>
     <artifactId>tribble-maven-plugin_2.12</artifactId>
-    <version>0.7</version>
+    <version>0.7.1</version>
     <configuration>
         <target>org.catapult.sa.testcase.TestCase</target>
     </configuration>
@@ -86,7 +86,7 @@ resolvers += Resolver.jcenterRepo
 ```
 * add dependency 
 ```scala
-"org.catapult.sa" % "tribble-core_2.12" % "0.7" % "test" classifier "shadow"
+"org.catapult.sa" %% "tribble-core" % "0.7.1" % "test" classifier "shadow"
 ```
 * Create a class that implements `FuzzTest` which will run a single test case with the provided data. This class should return
 a FuzzResult of OK if the test ran well or throws an exception the run is considered to be a failure. This class should be 
