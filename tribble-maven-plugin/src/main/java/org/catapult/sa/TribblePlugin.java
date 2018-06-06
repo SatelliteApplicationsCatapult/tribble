@@ -91,7 +91,7 @@ public class TribblePlugin extends AbstractMojo {
 
             for (Artifact a: project.getArtifacts()) {
                 // don't add tribble again. Its already there via our own dependencies. Weird things happen if not.
-                if (!(a.getGroupId().equals("org.catapult.sa") && a.getArtifactId().equals("tribble-core"))) {
+                if (!(a.getGroupId().equals("org.catapult.sa") && a.getArtifactId().startsWith("tribble-core"))) {
                     projectRealm.addURL(a.getFile().toURI().toURL());
                 }
             }
