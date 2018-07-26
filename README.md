@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/SatelliteApplicationsCatapult/tribble.svg?branch=master)](https://travis-ci.org/SatelliteApplicationsCatapult/tribble)
 
-An easy to use fuzz testing tool for java applications using coverage to guide the process. 
+Have a jvm application with an open socket? Need to test your application against un-expected input? Tribble can help generating and testing un-expected input and find out what happens.
+
+Tribble is an easy to use fuzz testing tool for java applications using coverage to guide the process. 
 Heavily based on the wonderful GoFuzz and AFL.
 
 It uses Jacoco to get coverage stats and has a maven plug for running.
