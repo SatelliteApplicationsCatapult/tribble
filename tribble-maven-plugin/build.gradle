@@ -109,7 +109,6 @@ task pluginDescriptor( type: Exec ) {
     dependsOn 'createPom', 'compileJava', ":tribble-core:install" // needs to be able to find tribble-core from inside maven
 
     environment("JAVA_HOME", "${System.properties.'java.home'}")
-
     commandLine mavenPath, '-e', '-B', '--file', "${buildDir.canonicalPath}/pom.xml", 'org.apache.maven.plugins:maven-plugin-plugin:3.5:descriptor'
     doFirst {
         final File pom = project.file("${buildDir.canonicalPath}/pom.xml")

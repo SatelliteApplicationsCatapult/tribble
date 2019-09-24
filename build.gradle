@@ -29,7 +29,7 @@ version '0.8-SNAPSHOT'
 
 // dependency versions
 ext.jacocoVersion = '0.8.1'
-ext.asmVersion = '6.2'
+ext.asmVersion = '7.1'
 ext.commonsIOVersion = '2.6'
 ext.commonsLangVersion = '2.6'
 
