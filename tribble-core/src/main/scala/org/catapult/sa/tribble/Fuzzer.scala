@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils
 import org.catapult.sa.tribble.stats._
 
 import scala.collection.JavaConverters._
-import scala.collection.convert.WrapAsScala.asScalaBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
@@ -192,7 +191,7 @@ class Fuzzer(corpus : Corpus,
     // Here we execute our test target class through its interface
     memoryClassLoader.reset()
 
-    var targetInstance = targetClass.newInstance()
+    var targetInstance = targetClass.getDeclaredConstructor().newInstance()
 
     try {
 

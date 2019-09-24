@@ -23,7 +23,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 import org.catapult.sa.tribble.mutators.Mutator
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.util.Random
 
@@ -41,10 +41,10 @@ class PlugableMutationEngine(rand: Random, disabledMutators : Array[String] = Ar
 
   private def findClasses(): List[Mutator] = {
     val classLoader = getClass.getClassLoader
-    classLoader.getResources("org.catapult.sa.tribble.mutators")
+    classLoader.getResources("org.catapult.sa.tribble.mutators").asScala
       .flatMap(loadFile(_, classLoader))
       .filterNot(c => disabledMutators.contains(c.getName))
-      .map(_.newInstance())
+      .map(_.getDeclaredConstructor().newInstance())
       .toList
   }
 
@@ -59,7 +59,7 @@ class PlugableMutationEngine(rand: Random, disabledMutators : Array[String] = Ar
 
   private def loadFile(u: URL, classLoader: ClassLoader): mutable.Buffer[Class[_ <: Mutator]] = {
     val stream = u.openStream()
-    val result = IOUtils.readLines(stream, StandardCharsets.UTF_8).flatMap { l =>
+    val result = IOUtils.readLines(stream, StandardCharsets.UTF_8).asScala.flatMap { l =>
       if (StringUtils.isNotBlank(l) || l.startsWith("#")) {
         loadClass(l, classLoader)
       } else {
