@@ -21,7 +21,7 @@ import org.catapult.sa.tribble.CommonBytes._
 import scala.util.Random
 
 /**
-  * Mutator that adds known file type prefixes on to the
+  * Mutator that adds known file type prefixes on to the front of the data
   *
   * List pulled from https://en.wikipedia.org/wiki/List_of_file_signatures with a lot of regex.
   *
