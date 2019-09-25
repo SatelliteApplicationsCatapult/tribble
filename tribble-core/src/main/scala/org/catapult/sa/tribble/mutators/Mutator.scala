@@ -263,6 +263,6 @@ class WhiteSpaceRemover extends Mutator {
       result
     }
 
-    in.slice(0, index) ++ in.slice(index+1, in.length)
+    Array.concat(in.slice(0, index), in.slice(index+1, in.length))
   }
 }
