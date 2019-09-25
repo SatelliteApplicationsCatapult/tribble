@@ -190,7 +190,8 @@ object InterestingByte {
     b('*'),
     b('\''),
     b('"'),
-    b('\\')
+    b('\\'),
+    b('=')
   )
 
 }
