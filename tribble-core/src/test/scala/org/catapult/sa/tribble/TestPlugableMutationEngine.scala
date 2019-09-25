@@ -26,7 +26,7 @@ class TestPlugableMutationEngine {
 
   @Test
   def basic() : Unit = {
-    val r = rand((15, 2))
+    val r = rand((16, 2))
 
     val engine = new PlugableMutationEngine(r)
     val result = engine.mutate(a(0x01, 0x02))
