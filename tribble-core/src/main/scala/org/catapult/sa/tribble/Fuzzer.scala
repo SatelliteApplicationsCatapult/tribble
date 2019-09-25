@@ -125,17 +125,8 @@ class Fuzzer(corpus : Corpus,
         val drain = new java.util.ArrayList[(Array[Byte], String)]()
         workQueue.drainTo(drain)
 
-        if (pathCountLastLoad == coverageSet.size()) {
-
-          // the last run did not generate any new coverages. Really randomise the corpus this time.
-          // mutate lots of times and try again
-          // Note: asScalaBuffer is deprecated in scala 2.12 however for now we need to support 2.11 which doesn't have the same class.
-          workQueue.addAll(asScalaBuffer(drain).map(e => (0 to 50).foldLeft(e)((a, _) => mutator.mutate(a._1))).map(_._1 -> "big").asJavaCollection)
-        } else {
-          // mutate everything from the corpus.
-          workQueue.addAll(asScalaBuffer(drain).map(e => mutator.mutate(e._1)).asJavaCollection)
-        }
-        pathCountLastLoad = coverageSet.size()
+        // mutate everything from the corpus.
+        workQueue.addAll(drain.asScala.map(e => mutator.mutate(e._1)).asJavaCollection)
       }
 
       val old = workQueue.poll()
