@@ -135,9 +135,14 @@ class FileSystemCorpus(corpusPath : String, failedPath : String) extends Corpus 
   }
 
   private def createExceptionFileName(t : Throwable) : String = {
-    val in = t.getStackTrace.map(_.toString).mkString("\n")
+    val in = cleanStackTrace(t)
     val md5 = MessageDigest.getInstance("MD5")
     DatatypeConverter.printHexBinary(md5.digest(in.getBytes(StandardCharsets.UTF_8)))
+  }
+
+  private def cleanStackTrace(t : Throwable) : String = {
+    val stack = t.getStackTrace.map(_.toString)
+    (stack.head.filterNot(Character.isDigit) +: stack.tail).mkString("\n")
   }
 
   private def saveArray(input: Array[Byte], fileName: String): Unit = {
