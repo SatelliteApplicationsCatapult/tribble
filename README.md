@@ -184,6 +184,20 @@ command line.
 | disabledMutators | | List of mutator class names to disable | |
 | | --disabledMutations | Comma separated list of mutators to disable | |
 
+## Extensions
+
+### Custom mutators
+
+It is possible to add extra mutators using a plugin like system. Create a class that extends the 
+`org.catapult.sa.tribble.mutators.Mutator` trait. The list the class in a file called `org.catapult.sa.tribble.mutators`
+The default mutation engine will look for files with that name that contain lists of classes to use as mutators.
+
+### Extra keywords
+
+If you are fuzzing a system which takes defined keywords it can take a while for the system to come up with them on its 
+own. There is a keyword mutator, which can be extended by adding your own file called `org.catapult.sa.tribble.keywords` 
+with one entry per line. On start up the keyword mutator will search the class path for files with that name.  
+
 ## Design goals:
 1) Easy to use and setup
 1) Easy to develop and extent
