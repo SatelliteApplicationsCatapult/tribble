@@ -13,3 +13,4 @@ org.catapult.sa.tribble.mutators.FlipByte
 org.catapult.sa.tribble.mutators.Swap
 org.catapult.sa.tribble.mutators.InterestingByte
 org.catapult.sa.tribble.mutators.InterestingInts
+org.catapult.sa.tribble.mutators.WhiteSpaceRemover

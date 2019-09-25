@@ -16,9 +16,9 @@
 
 package org.catapult.sa.tribble.mutators
 
-import scala.util.Random
-
 import org.catapult.sa.tribble.CommonBytes._
+
+import scala.util.Random
 
 /**
   * This file contains the default set of mutators.
@@ -238,4 +238,30 @@ object InterestingInts {
   )
 }
 
+// Remove a random white space character from the input
+class WhiteSpaceRemover extends Mutator {
+  override def mutate(in: Array[Byte], rand: Random): Array[Byte] = {
+    val count = in.count(b => Character.isWhitespace(b))
+    // no white space... not a lot we can do but return the source unfortunately.
+    if (count == 0) {
+      return in
+    }
+    val target = rand.nextInt(count)
 
+    val (_, index: Int) = in.foldLeft[(Int, Int)]((0, 0)) {(work : (Int, Int), b : Byte) =>
+      var result = (0, 0)
+      if (work._2 == target) {
+        result = work
+      }
+      else if (Character.isWhitespace(b)) {
+        result = (work._1 + 1, work._2 + 1)
+      }
+      else {
+        result = (work._1 + 1, work._2)
+      }
+      result
+    }
+
+    in.slice(0, index) ++ in.slice(index+1, in.length)
+  }
+}
