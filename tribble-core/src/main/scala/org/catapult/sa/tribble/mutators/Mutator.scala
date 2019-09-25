@@ -16,10 +16,9 @@
 
 package org.catapult.sa.tribble.mutators
 
-import org.apache.commons.lang.{CharUtils, StringUtils}
+import org.catapult.sa.tribble.CommonBytes._
 
 import scala.util.Random
-import org.catapult.sa.tribble.CommonBytes._
 
 /**
   * This file contains the default set of mutators.
