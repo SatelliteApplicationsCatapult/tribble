@@ -24,7 +24,7 @@ plugins {
 }
 
 group 'org.catapult.sa'
-version '0.8-SNAPSHOT'
+version '0.8'
 
 
 // dependency versions
