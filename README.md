@@ -216,7 +216,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) file and the [Code of conduct](CODE_O
 
 ## Contributors
 
-* [Wil Selwood](https://github.com/wselwood)
+* [Emily Selwood](https://github.com/emilyselwood)
 * [Cameron Shiell](https://github.com/amanshu)
 * [Chen Chenglong](https://github.com/ccl0326)
 * [Keegan Neave](https://github.com/kneave)
